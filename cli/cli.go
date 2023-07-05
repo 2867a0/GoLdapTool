@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"goLdapTools/conn"
 	"goLdapTools/log"
@@ -39,6 +40,7 @@ func init() {
 	rootCmd.AddCommand(searchCmd)
 
 	searchCmd.AddCommand(allUserCmd)
+	searchCmd.AddCommand(rbcdCmd)
 }
 
 var rootCmd = &cobra.Command{
@@ -86,8 +88,7 @@ func parseGlobalCommand(cmd *cobra.Command) (config *conn.ConnectConfig, err err
 		return nil, err
 	}
 	if domainName == "" {
-		log.PrintError("Must specify --domainName--")
-		return nil, err
+		return nil, errors.New("domain name is not specified")
 	}
 
 	u, err := cmd.Flags().GetString(userStr)
