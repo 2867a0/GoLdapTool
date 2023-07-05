@@ -78,7 +78,7 @@ func (pluginBase *PluginBase) Search(conn *conn.Connector) ([]*ldap.Entry, error
 // PrintResult 父类默认打印结果函数
 func (pluginBase PluginBase) PrintResult(entries []*ldap.Entry) {
 
-	log.PrintSuccess("\nSearch result")
+	log.PrintSuccess("Search complete")
 
 	for _, entry := range entries {
 		attribute := ""

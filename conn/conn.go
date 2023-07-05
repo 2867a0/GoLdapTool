@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/go-ldap/ldap/v3"
+	"goLdapTools/log"
 )
 
 type Connector struct {
@@ -26,15 +27,19 @@ func LdapConnect(config *ConnectConfig) (*Connector, error) {
 
 	//非加密连接
 	if !config.SSLConn {
+		log.PrintDebugf("Trying to connecting server %s:389", config.Address)
 		conn, err = ldap.Dial("tcp", fmt.Sprintf("%s:389", config.Address))
 		if err != nil {
 			return nil, err
 		}
 
+		log.PrintDebugf("Trying to binding server")
 		err = conn.Bind(config.UserName, config.Password)
 		if err != nil {
 			return nil, err
 		}
+
+		log.PrintSuccess("Binding success")
 	} else {
 		// TODO SSL连接
 	}
