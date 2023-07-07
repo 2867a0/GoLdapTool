@@ -11,6 +11,10 @@ type ACE struct {
 	AceSize  [2]byte
 }
 
+type AceMaks struct {
+	Mask [32]byte
+}
+
 func (ace ACE) readACEHeader(data []byte) error {
 	if len(data) != 4 {
 		fmt.Printf("ACE header length error")
