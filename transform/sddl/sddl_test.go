@@ -151,10 +151,13 @@ func TestSDDLResolve(t *testing.T) {
 		0, 0, 0, 5, 21, 0, 0, 0, 189, 196, 43, 33, 55, 199, 37, 127,
 		238, 57, 55, 71, 0, 2, 0, 0}
 
-	_, err := NewSecurityDescriptor(testSDDL)
+	sr, err := NewSecurityDescriptor(testSDDL)
 	if err != nil {
 		fmt.Printf(err.Error())
+		return
 	}
+
+	sr.Dump()
 }
 
 func TestByteToInt(t *testing.T) {

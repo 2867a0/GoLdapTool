@@ -15,7 +15,7 @@ type ACL struct {
 	Sbz2        [2]byte
 }
 
-func (acl ACL) readACLHeader(data []byte) error {
+func (acl *ACL) readACLHeader(data []byte) error {
 	if len(data) != 8 {
 		fmt.Printf("ACL header length error")
 		return errors.New("bad ACL header length")

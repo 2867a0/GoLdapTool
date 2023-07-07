@@ -10,7 +10,7 @@ import (
 type SrSecurityDescriptor struct {
 	Revision    byte
 	Sbz1        byte
-	Control     [2]byte // TODO resolve this value
+	Control     *SecurityDescriptorControl // TODO resolve this value
 	OffsetOwner [4]byte
 	OffsetGroup [4]byte
 	OffsetSacl  [4]byte
@@ -19,23 +19,36 @@ type SrSecurityDescriptor struct {
 	Dacl        interface{}
 	OwnerSid    interface{}
 	GroupSid    interface{}
+
+	RawData []byte
+}
+
+type SecurityDescriptorControl struct {
+	ControlString string
+	RawData       [2]byte
 }
 
 func NewSecurityDescriptor(sddl_data []byte) (*SrSecurityDescriptor, error) {
-	sr := &SrSecurityDescriptor{}
+	sr := &SrSecurityDescriptor{RawData: sddl_data}
 	err := sr.readNtSecurityDescriptorHeader(sddl_data[0:20])
 	if err != nil {
 		return nil, err
 	}
 
 	acl := &ACL{}
-	err = acl.readACLHeader(sddl_data[20:29])
+	err = acl.readACLHeader(sddl_data[20:28])
 	if err != nil {
 		return nil, err
 	}
 
 	ace := &ACE{}
-	err = ace.readACEHeader(sddl_data[29:34])
+	err = ace.readACEHeader(sddl_data[28:32])
+	if err != nil {
+		return nil, err
+	}
+
+	aceMask := &AceMask{}
+	err = aceMask.readACEMask(sddl_data[32:36])
 	if err != nil {
 		return nil, err
 	}
@@ -52,13 +65,35 @@ func (sr *SrSecurityDescriptor) readNtSecurityDescriptorHeader(data []byte) erro
 
 	sr.Revision = data[0]
 	sr.Sbz1 = data[1]
-	sr.Control = [2]byte(data[2:4])
+
+	control := &SecurityDescriptorControl{RawData: [2]byte(data[2:4])}
+	control.resolveControl()
+
+	sr.Control = control
 	sr.OffsetOwner = [4]byte(data[4:8])
 	sr.OffsetGroup = [4]byte(data[8:12])
 	sr.OffsetSacl = [4]byte(data[12:16])
 	sr.OffsetDacl = [4]byte(data[16:20])
 
 	return nil
+}
+
+func (sdc *SecurityDescriptorControl) resolveControl() {
+	_ = uint16(sdc.RawData[0]) | uint16(sdc.RawData[1])<<8
+
+}
+
+func (sr *SrSecurityDescriptor) Dump() {
+	for index, d := range sr.RawData {
+		fmt.Printf("%02x ", d)
+
+		if (index+1)%16 == 0 {
+			fmt.Printf("\n")
+		}
+	}
+
+	//SecurityDescriptor
+
 }
 
 func TransformRawSDDL(b []byte) string {
