@@ -35,3 +35,6 @@
 - [ ] 查找具有SPN属性的账户  
 - [ ] 查找域管账户  
 - [ ] - [ ] 查找DCSync账户
+
+其他补充  
+https://www.politoinc.com/post/ldap-queries-for-offensive-and-defensive-operations

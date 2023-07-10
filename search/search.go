@@ -83,7 +83,22 @@ func (pluginBase PluginBase) PrintResult(entries []*ldap.Entry) {
 	for _, entry := range entries {
 		attribute := ""
 		for _, v := range entry.Attributes {
-			attribute = fmt.Sprintf("%s\n    %s: %s", attribute, v.Name, strings.Join(v.Values, " "))
+
+			if v.Name == "nTSecurityDescriptor" {
+				// debug dump
+				var nTSecurityDescriptorRawValue string
+				for index, value := range v.ByteValues[0] {
+					nTSecurityDescriptorRawValue = nTSecurityDescriptorRawValue + fmt.Sprintf("0x%02x, ", value)
+
+					if (index+1)%16 == 0 {
+						nTSecurityDescriptorRawValue = nTSecurityDescriptorRawValue + "\n"
+					}
+				}
+				log.PrintInfof("\n%s\n", nTSecurityDescriptorRawValue)
+
+			} else {
+				attribute = fmt.Sprintf("%s\n    %s: %s", attribute, v.Name, strings.Join(v.Values, " "))
+			}
 		}
 
 		log.PrintInfo(fmt.Sprintf("\n%s%s\n", entry.DN, attribute))
