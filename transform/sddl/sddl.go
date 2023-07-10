@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"goLdapTools/transform"
+	"strings"
 )
 
 // SrSecurityDescriptor
@@ -138,7 +139,115 @@ func (sr *SrSecurityDescriptor) readNtSecurityDescriptorHeader(data []byte) erro
 	return nil
 }
 
-// 打印，以字符串形式显示数据
-func (sr *SrSecurityDescriptor) Dump() error {
-	return nil
+// DataToString 打印，以字符串形式显示数据
+func (sr *SrSecurityDescriptor) DataToString() strings.Builder {
+	var sddlString strings.Builder
+
+	// SecurityDescriptor头
+	sddlString.WriteString(
+		fmt.Sprintf("SecurityDescriptor header:\n"+
+			"%4s%-20s%x\n"+
+			"%4s%-20s%x\n"+
+			"%4s%-20s%d\n"+
+			"%4s%-20s%d\n"+
+			"%4s%-20s%d\n"+
+			"%4s%-20s%d\n"+
+			"%4s%-20s%d\n"+
+			"%4s%-20s%s\n"+
+			"%4s%-20s%s\n\n",
+			" ", "Revision:", sr.Revision,
+			" ", "Sbz1:", sr.Sbz1,
+			" ", "Control:", sr.Control.Value,
+			" ", "OffsetOwner:", sr.OffsetOwner.Value,
+			" ", "OffsetGroup:", sr.OffsetGroup.Value,
+			" ", "OffsetSacl:", sr.OffsetSacl.Value,
+			" ", "OffsetDacl", sr.OffsetDacl.Value,
+			" ", "OwnerSid:", sr.OwnerSid.Value,
+			" ", "GroupSid:", sr.GroupSid.Value))
+
+	// Sacl头
+	sddlString.WriteString(
+		fmt.Sprintf("Sacl header:\n"+
+			"%4s%-20s%x\n"+
+			"%4s%-20s%x\n"+
+			"%4s%-20s%d\n"+
+			"%4s%-20s%d\n"+
+			"%4s%-20s%d\n\n",
+			" ", "Revision:", sr.Sacl.Header.Revision,
+			" ", "Sbz1:", sr.Sacl.Header.Sbz1,
+			" ", "Acl Size:", sr.Sacl.Header.AclSize.Value,
+			" ", "Ace Count:", sr.Sacl.Header.AceCount.Value,
+			" ", "Sbz2:", sr.Sacl.Header.Sbz2.Value))
+
+	//Sacl Ace条目
+	sddlString.WriteString(fmt.Sprintf("%4sAce(%d):\n", " ", len(sr.Sacl.Aces)))
+	for index, ace := range sr.Sacl.Aces {
+		sddlString.WriteString(
+			fmt.Sprintf("%8s%d\n"+
+				"%12s%-20s%x\n"+
+				"%12s%-20s%x\n"+
+				"%12s%-20s%d\n"+
+				"%12s%-20s%d\n"+
+				"%12s%-20s%s\n",
+				" ", index+1,
+				" ", "Ace Type:", ace.AceType,
+				" ", "Ace Flags:", ace.AceFlags,
+				" ", "Ace Size:", ace.AceSize.Value,
+				" ", "Ace Mask:", ace.AceMask.Value,
+				" ", "Extended:", ace.Extended.Value))
+
+		if ace.ObjectType != nil {
+			sddlString.WriteString(fmt.Sprintf("%12s%-20s%s\n", " ", "ObjectType:", ace.ObjectType.Value))
+		}
+
+		if ace.InheritedObjectType != nil {
+			sddlString.WriteString(fmt.Sprintf("%12s%-20s%s\n", " ", "InheritedObjectType:", ace.InheritedObjectType.Value))
+		}
+
+		sddlString.WriteString(fmt.Sprintf("%12s%-20s%s\n\n", " ", "SID:", ace.SID.Value))
+	}
+
+	// Dacl头
+	sddlString.WriteString(
+		fmt.Sprintf("Dacl header:\n"+
+			"%4s%-20s%x\n"+
+			"%4s%-20s%x\n"+
+			"%4s%-20s%d\n"+
+			"%4s%-20s%d\n"+
+			"%4s%-20s%d\n\n",
+			" ", "Revision:", sr.Dacl.Header.Revision,
+			" ", "Sbz1:", sr.Dacl.Header.Sbz1,
+			" ", "Acl Size:", sr.Dacl.Header.AclSize.Value,
+			" ", "Ace Count:", sr.Dacl.Header.AceCount.Value,
+			" ", "Sbz2:", sr.Dacl.Header.Sbz2.Value))
+
+	//Dacl Ace条目
+	sddlString.WriteString(fmt.Sprintf("%4sAce(%d):\n", " ", len(sr.Dacl.Aces)))
+	for index, ace := range sr.Dacl.Aces {
+		sddlString.WriteString(
+			fmt.Sprintf("%8s%d\n"+
+				"%12s%-20s%x\n"+
+				"%12s%-20s%x\n"+
+				"%12s%-20s%d\n"+
+				"%12s%-20s%d\n"+
+				"%12s%-20s%s\n",
+				" ", index+1,
+				" ", "Ace Type:", ace.AceType,
+				" ", "Ace Flags:", ace.AceFlags,
+				" ", "Ace Size:", ace.AceSize.Value,
+				" ", "Ace Mask:", ace.AceMask.Value,
+				" ", "Extended:", ace.Extended.Value))
+
+		if ace.ObjectType != nil {
+			sddlString.WriteString(fmt.Sprintf("%12s%-20s%s\n", " ", "ObjectType:", ace.ObjectType.Value))
+		}
+
+		if ace.InheritedObjectType != nil {
+			sddlString.WriteString(fmt.Sprintf("%12s%-20s%s\n", " ", "InheritedObjectType:", ace.InheritedObjectType.Value))
+		}
+
+		sddlString.WriteString(fmt.Sprintf("%12s%-20s%s\n\n", " ", "SID:", ace.SID.Value))
+	}
+
+	return sddlString
 }

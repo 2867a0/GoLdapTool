@@ -160,7 +160,10 @@ func TestSDDLResolve(t *testing.T) {
 		return
 	}
 
-	//Dump 头
+	//sddlString := sr.DataToString()
+	//fmt.Printf(sddlString.String())
+
+	//DataToString 头
 	fmt.Printf("NtSecurityDescriptor header:\n    ")
 	for i, v := range sr.RawData[0:20] {
 		fmt.Printf("%02x ", v)
@@ -192,7 +195,7 @@ func TestSDDLResolve(t *testing.T) {
 	fmt.Printf("    Sbz1:      %x\n", sr.Sacl.Header.Sbz1)
 	fmt.Printf("    Acl Size:  %d\n", sr.Sacl.Header.AclSize.Value)
 	fmt.Printf("    Ace Count: %d\n", sr.Sacl.Header.AceCount.Value)
-	fmt.Printf("    Sbz2:      %x\n", sr.Sacl.Header.Sbz2.RawData)
+	fmt.Printf("    Sbz2:      %d\n", sr.Sacl.Header.Sbz2.Value)
 	fmt.Printf("\n")
 
 	// Sacl Ace

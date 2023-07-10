@@ -5,6 +5,7 @@ import (
 	"github.com/go-ldap/ldap/v3"
 	"goLdapTools/conn"
 	"goLdapTools/log"
+	"goLdapTools/transform/sddl"
 	"strings"
 )
 
@@ -86,7 +87,7 @@ func (pluginBase PluginBase) PrintResult(entries []*ldap.Entry) {
 
 			if v.Name == "nTSecurityDescriptor" {
 				// debug dump
-				var nTSecurityDescriptorRawValue string
+				/*var nTSecurityDescriptorRawValue string
 				for index, value := range v.ByteValues[0] {
 					nTSecurityDescriptorRawValue = nTSecurityDescriptorRawValue + fmt.Sprintf("0x%02x, ", value)
 
@@ -94,7 +95,13 @@ func (pluginBase PluginBase) PrintResult(entries []*ldap.Entry) {
 						nTSecurityDescriptorRawValue = nTSecurityDescriptorRawValue + "\n"
 					}
 				}
-				log.PrintInfof("\n%s\n", nTSecurityDescriptorRawValue)
+				log.PrintInfof("\n%s\n", nTSecurityDescriptorRawValue)*/
+				sr, err := sddl.NewSecurityDescriptor(v.ByteValues[0])
+				if err != nil {
+					log.PrintErrorf("%s\n%s\n", "resolve nTSecurityDescriptor error:", err.Error())
+					return
+				}
+				log.PrintDebugf("Dacl ace entries length: %d\nt", len(sr.Dacl.Aces))
 
 			} else {
 				attribute = fmt.Sprintf("%s\n    %s: %s", attribute, v.Name, strings.Join(v.Values, " "))
