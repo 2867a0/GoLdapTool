@@ -39,8 +39,12 @@ func init() {
 	searchCmd.PersistentFlags().StringP(exportStr, "o", "", "save result to file.")
 	rootCmd.AddCommand(searchCmd)
 
-	searchCmd.AddCommand(allUserCmd)
+	// 委派搜索注册
 	searchCmd.AddCommand(rbcdCmd)
+
+	// 用户类搜索注册
+	searchCmd.AddCommand(allUserCmd)
+	searchCmd.AddCommand(dcsyncUserCmd)
 }
 
 var rootCmd = &cobra.Command{

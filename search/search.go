@@ -18,7 +18,7 @@ type SearchFlag struct {
 }
 
 type SearchInterface interface {
-	Search(conn *conn.Connector) ([]*ldap.Entry, error)
+	Search(conn *conn.Connector, controls []ldap.Control) ([]*ldap.Entry, error)
 	PrintResult(entries []*ldap.Entry)
 }
 
@@ -54,7 +54,7 @@ func NewPluginBase(defaultDN string, defaultFilter string, defaultAttribute []st
 }
 
 // Search 父类默认搜索方法
-func (pluginBase *PluginBase) Search(conn *conn.Connector) ([]*ldap.Entry, error) {
+func (pluginBase *PluginBase) Search(conn *conn.Connector, controls []ldap.Control) ([]*ldap.Entry, error) {
 	log.PrintDebugf("\nSearch info:\n"+
 		"    base dn:   %s\n"+
 		"    filter:    %s\n"+
@@ -65,7 +65,7 @@ func (pluginBase *PluginBase) Search(conn *conn.Connector) ([]*ldap.Entry, error
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 		pluginBase.Filter,
 		pluginBase.Attributes,
-		nil,
+		controls,
 	)
 	sr, err := conn.Conn.Search(searchRequest)
 	if err != nil {
@@ -86,23 +86,14 @@ func (pluginBase PluginBase) PrintResult(entries []*ldap.Entry) {
 		for _, v := range entry.Attributes {
 
 			if v.Name == "nTSecurityDescriptor" {
-				// debug dump
-				/*var nTSecurityDescriptorRawValue string
-				for index, value := range v.ByteValues[0] {
-					nTSecurityDescriptorRawValue = nTSecurityDescriptorRawValue + fmt.Sprintf("0x%02x, ", value)
-
-					if (index+1)%16 == 0 {
-						nTSecurityDescriptorRawValue = nTSecurityDescriptorRawValue + "\n"
-					}
-				}
-				log.PrintInfof("\n%s\n", nTSecurityDescriptorRawValue)*/
 				sr, err := sddl.NewSecurityDescriptor(v.ByteValues[0])
 				if err != nil {
 					log.PrintErrorf("%s\n%s\n", "resolve nTSecurityDescriptor error:", err.Error())
 					return
 				}
 				log.PrintDebugf("Dacl ace entries length: %d\nt", len(sr.Dacl.Aces))
-
+				resultStrings := sr.DataToString()
+				log.PrintDebugf("dump result string: \n%s\n", resultStrings.String())
 			} else {
 				attribute = fmt.Sprintf("%s\n    %s: %s", attribute, v.Name, strings.Join(v.Values, " "))
 			}

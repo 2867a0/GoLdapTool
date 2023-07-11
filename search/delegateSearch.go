@@ -20,10 +20,10 @@ func NewPluginRBCD(flag *SearchFlag) PluginRBCD {
 	return PluginRBCD{NewPluginBase("", filter, attributes, flag)}
 }
 
-func (pluginRBCD *PluginRBCD) Search(conn *conn.Connector) ([]*ldap.Entry, error) {
+func (pluginRBCD *PluginRBCD) Search(conn *conn.Connector, controls []ldap.Control) ([]*ldap.Entry, error) {
 	var results []*ldap.Entry
 
-	firstSearch, err := pluginRBCD.PluginBase.Search(conn)
+	firstSearch, err := pluginRBCD.PluginBase.Search(conn, controls)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (pluginRBCD *PluginRBCD) Search(conn *conn.Connector) ([]*ldap.Entry, error
 				pluginRBCD.Filter = fmt.Sprintf("(&(objectCategory=person)(objectSid=%s))", sidString)
 				pluginRBCD.Attributes = []string{"distinguishedName"}
 
-				secondSearch, err := pluginRBCD.PluginBase.Search(conn)
+				secondSearch, err := pluginRBCD.PluginBase.Search(conn, controls)
 				if err != nil {
 					log.PrintDebug("second search error")
 					return nil, err

@@ -15,7 +15,7 @@ var rbcdCmd = &cobra.Command{
 
 		pRBCD := search.NewPluginRBCD(searchCommand)
 
-		entries, err := pRBCD.Search(ldapConnecter)
+		entries, err := pRBCD.Search(ldapConnecter, nil)
 		if err != nil {
 			log.PrintErrorf("search all user error: %s", err.Error())
 			return

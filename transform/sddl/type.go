@@ -29,16 +29,22 @@ func GuidToString(data []byte) (string, error) {
 		return guidString, errors.New("the incoming data length is not a valid GUID data format length")
 	}
 
+	//4
 	guid1 := data[0:4]
 	for i := range guid1 {
 		guidString += fmt.Sprintf("%02X", guid1[len(guid1)-i-1])
 	}
 
+	//2-2
 	guidString += fmt.Sprintf("-%02X%02X-%02X%02X-", data[5], data[4], data[7], data[6])
 
-	guid2 := data[8:]
+	// 2
+	guidString += fmt.Sprintf("%02X%02x-", data[8], data[9])
+
+	//6
+	guid2 := data[10:]
 	for i := range guid2 {
-		guidString += fmt.Sprintf("%02X", guid2[len(guid2)-i-1])
+		guidString += fmt.Sprintf("%02X", guid2[i])
 	}
 
 	return guidString, nil

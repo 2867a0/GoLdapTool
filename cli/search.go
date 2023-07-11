@@ -18,7 +18,7 @@ var searchCmd = &cobra.Command{
 		searchCommand, ldapConnecter := getLoginHandle(cmd)
 
 		pb := search.NewPluginBase("", "", []string{}, searchCommand)
-		entries, err := pb.Search(ldapConnecter)
+		entries, err := pb.Search(ldapConnecter, nil)
 		if err != nil {
 			log.PrintErrorf("custom search error: %s", err.Error())
 			return
