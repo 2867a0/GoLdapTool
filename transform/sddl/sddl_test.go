@@ -3,8 +3,52 @@ package sddl
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/go-ldap/ldap/v3"
+	"goLdapTools/log"
 	"testing"
 )
+
+func TestGetSDDLFromLdap(t *testing.T) {
+	log.Init(true)
+	conn, err := ldap.Dial("tcp", fmt.Sprintf("%s:389", "dc.test.lab"))
+	if err != nil {
+		fmt.Printf(err.Error())
+		return
+	}
+
+	err = conn.Bind("administrator@test.lab", "123.com")
+	if err != nil {
+		fmt.Printf(err.Error())
+		return
+	}
+
+	searchRequest := ldap.NewSearchRequest(
+		"DC=test,DC=lab",
+		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
+		"(objectclass=domain)",
+		[]string{"nTSecurityDescriptor"},
+		nil,
+	)
+	searchResults, err := conn.Search(searchRequest)
+	if err != nil {
+		log.PrintErrorf("search ldap error: %s", err.Error())
+		return
+	}
+
+	for _, entry := range searchResults.Entries {
+		for _, v := range entry.Attributes {
+			if v.Name == "nTSecurityDescriptor" {
+				sr, err := NewSecurityDescriptor(v.ByteValues[0])
+				if err != nil {
+					log.PrintErrorf("%s\n%s\n", "resolve nTSecurityDescriptor error:", err.Error())
+					return
+				}
+				resultStrings := sr.DataToString()
+				fmt.Printf("dump nTSecurityDescriptor string: \n%s\n", resultStrings.String())
+			}
+		}
+	}
+}
 
 func TestSDDLResolve(t *testing.T) {
 	// cn=john,cn=users,dc=test,dc=lab
