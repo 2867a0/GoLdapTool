@@ -78,11 +78,11 @@ func (pluginBase *PluginBase) Search(conn *conn.Connector, controls []ldap.Contr
 
 // PrintResult 父类默认打印结果函数
 func (pluginBase PluginBase) PrintResult(entries []*ldap.Entry) {
-
-	log.PrintSuccess("Search complete")
-
+	attribute := ""
 	for _, entry := range entries {
-		attribute := ""
+		if attribute == "" {
+			attribute = entry.DN
+		}
 		for _, v := range entry.Attributes {
 
 			if v.Name == "nTSecurityDescriptor" {
@@ -91,16 +91,15 @@ func (pluginBase PluginBase) PrintResult(entries []*ldap.Entry) {
 					log.PrintErrorf("%s\n%s\n", "resolve nTSecurityDescriptor error:", err.Error())
 					return
 				}
-				log.PrintDebugf("Dacl ace entries length: %d\nt", len(sr.Dacl.Aces))
 				resultStrings := sr.DataToString()
-				log.PrintDebugf("dump result string: \n%s\n", resultStrings.String())
+				log.PrintDebugf("dump nTSecurityDescriptor string: \n%s\n", resultStrings.String())
 			} else {
 				attribute = fmt.Sprintf("%s\n    %s: %s", attribute, v.Name, strings.Join(v.Values, " "))
 			}
 		}
-
-		log.PrintInfo(fmt.Sprintf("\n%s%s\n", entry.DN, attribute))
+		attribute = fmt.Sprintf("%s\n", attribute)
 	}
+	log.PrintSuccessf("%s\n%s", "Search result:", attribute)
 }
 
 // 通过map主键唯一的特性过滤重复元素
