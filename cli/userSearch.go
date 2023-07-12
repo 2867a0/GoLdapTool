@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	"goLdapTools/log"
 	"goLdapTools/search"
+	"goLdapTools/transform"
 )
 
 var allUserCmd = &cobra.Command{
@@ -34,7 +35,7 @@ var dcsyncUserCmd = &cobra.Command{
 
 		// control value = 4 只查询dacl
 		dcsyncSearch := search.NewPluginDCSyncUser(searchCommand)
-		entries, err := dcsyncSearch.Search(ldapConnecter, []ldap.Control{&search.ControlMicrosoftSDFlags{ControlValue: 4}})
+		entries, err := dcsyncSearch.Search(ldapConnecter, []ldap.Control{&transform.ControlMicrosoftSDFlags{ControlValue: 4}})
 		if err != nil {
 			log.PrintErrorf("Search DCSync user error: %s", err.Error())
 			return

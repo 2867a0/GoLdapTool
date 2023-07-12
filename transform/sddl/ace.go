@@ -1,7 +1,5 @@
 package sddl
 
-import "fmt"
-
 // AceType Flag
 const (
 	ACCESS_ALLOWED_ACE_TYPE                 = 0x00
@@ -37,40 +35,6 @@ const (
 	SUCCESSFUL_ACCESS_ACE_FLAG = 0x40
 )
 
-// ace mask flags
-const (
-	GENERIC_READ           = 0x80000000
-	GENERIC_WRITE          = 0x40000000
-	GENERIC_EXECUTE        = 0x20000000
-	GENERIC_ALL            = 0x10000000
-	MAXIMUM_ALLOWED        = 0x02000000
-	ACCESS_SYSTEM_SECURITY = 0x01000000
-	SYNCHRONIZE            = 0x00100000
-	WRITE_OWNER            = 0x00080000
-	WRITE_DACL             = 0x00040000
-	READ_CONTROL           = 0x00020000
-	DELETE                 = 0x00010000
-)
-
-// AceMaskMap ace mask flags
-var AceMaskMap = map[string]uint32{
-	"GENERIC_READ":           0x80000000,
-	"GENERIC_WRITE":          0x40000000,
-	"GENERIC_EXECUTE":        0x20000000,
-	"GENERIC_ALL":            0x10000000,
-	"MAXIMUM_ALLOWED":        0x02000000,
-	"ACCESS_SYSTEM_SECURITY": 0x01000000,
-	"SYNCHRONIZE":            0x00100000,
-	"WRITE_OWNER":            0x00080000,
-	"WRITE_DACL":             0x00040000,
-	"READ_CONTROL":           0x00020000,
-	"DELETE":                 0x00010000,
-}
-
-type AceMaskStruct struct {
-	DataType
-}
-
 type AceStruct struct {
 	AceType  byte
 	AceFlags byte
@@ -83,34 +47,4 @@ type AceStruct struct {
 	// 16 Bits
 	InheritedObjectType *DataType
 	SID                 *DataType
-}
-
-func (aceMask *AceMaskStruct) HasPriv(priv uint32) (bool, error) {
-	data, err := getValue(aceMask.RawData)
-	if err != nil {
-		return false, err
-	}
-
-	return data&priv == priv, nil
-}
-
-func (aceMask *AceMaskStruct) setPriv(priv uint32) {
-	aceMask.Value = aceMask.Value.(uint32) | priv
-}
-
-// TODO 字段错误
-func (aceMask *AceMaskStruct) getAceMaskString() (string, error) {
-	var privStr string
-	for k, v := range AceMaskMap {
-		hasPriv, err := aceMask.HasPriv(v)
-		if err != nil {
-			return "", err
-		}
-
-		if hasPriv {
-			privStr += fmt.Sprintf("%s;", k)
-		}
-	}
-
-	return privStr, nil
 }

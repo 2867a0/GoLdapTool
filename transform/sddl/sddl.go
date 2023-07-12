@@ -244,18 +244,22 @@ func (sr *SrSecurityDescriptor) DataToString() strings.Builder {
 		//Sacl Ace条目
 		sddlString.WriteString(fmt.Sprintf("%4sAce(%d):\n", " ", len(sr.Sacl.Aces)))
 		for index, ace := range sr.Sacl.Aces {
+			aceMaskString, err := ace.AceMask.getAceMaskString()
+			if err != nil {
+				log.PrintErrorf("get ace mask string error: %s", err)
+			}
 			sddlString.WriteString(
 				fmt.Sprintf("%8s%d\n"+
 					"%12s%-20s%x\n"+
 					"%12s%-20s%x\n"+
 					"%12s%-20s%d\n"+
-					"%12s%-20s%d\n"+
+					"%12s%-20s%d(%s)\n"+
 					"%12s%-20s%s\n",
 					" ", index+1,
 					" ", "Ace Type:", ace.AceType,
 					" ", "Ace Flags:", ace.AceFlags,
 					" ", "Ace Size:", ace.AceSize.Value,
-					" ", "Ace Mask:", ace.AceMask.Value,
+					" ", "Ace Mask:", ace.AceMask.Value, aceMaskString,
 					" ", "Extended:", ace.Extended.Value))
 
 			if ace.ObjectType != nil {
@@ -288,18 +292,23 @@ func (sr *SrSecurityDescriptor) DataToString() strings.Builder {
 		//Dacl Ace条目
 		sddlString.WriteString(fmt.Sprintf("%4sAce(%d):\n", " ", len(sr.Dacl.Aces)))
 		for index, ace := range sr.Dacl.Aces {
+			aceMaskString, err := ace.AceMask.getAceMaskString()
+			if err != nil {
+				log.PrintErrorf("get ace mask string error: %s", err)
+			}
+
 			sddlString.WriteString(
 				fmt.Sprintf("%8s%d\n"+
 					"%12s%-20s%x\n"+
 					"%12s%-20s%x\n"+
 					"%12s%-20s%d\n"+
-					"%12s%-20s%d\n"+
+					"%12s%-20s%d(%s)\n"+
 					"%12s%-20s%s\n",
 					" ", index+1,
 					" ", "Ace Type:", ace.AceType,
 					" ", "Ace Flags:", ace.AceFlags,
 					" ", "Ace Size:", ace.AceSize.Value,
-					" ", "Ace Mask:", ace.AceMask.Value,
+					" ", "Ace Mask:", ace.AceMask.Value, aceMaskString,
 					" ", "Extended:", ace.Extended.Value))
 
 			if ace.ObjectType != nil {

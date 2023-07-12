@@ -1,5 +1,6 @@
 package sddl
 
+// https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/1522b774-6464-41a3-87a5-1e5633c3fbbb
 const (
 	Abandon_Replication                           = "ee914b82-0a98-11d1-adbb-00c04fd8d5cd"
 	Add_GUID                                      = "440820ad-65b4-11d1-a3da-0000f875ae0d"
@@ -17,14 +18,14 @@ const (
 	Do_Garbage_Collection                         = "fec364e0-0a98-11d1-adbb-00c04fd8d5cd"
 	Domain_Administer_Server                      = "ab721a52-1e2f-11d0-9819-00aa0040529b"
 	DS_Check_Stale_Phantoms                       = "69ae6200-7f46-11d2-b9ad-00c04f79f805"
-	DS_Execute_Intentions_Script                  = "2f16c4a5-b98e-432c-952a-cb388ba33f2eX"
+	DS_Execute_Intentions_Script                  = "2f16c4a5-b98e-432c-952a-cb388ba33f2e"
 	DS_Install_Replica                            = "9923a32a-3607-11d2-b9be-0000f87a36b2"
-	DS_Query_Self_Quota                           = "4ecc03fe-ffc0-4947-b630-eb672a8a9dbcX"
+	DS_Query_Self_Quota                           = "4ecc03fe-ffc0-4947-b630-eb672a8a9dbc"
 	DS_Replication_Get_Changes                    = "1131f6aa-9c07-11d1-f79f-00c04fc2dcd2"
-	DS_Replication_Get_Changes_All                = "1131f6ad-9c07-11d1-f79f-00c04fc2dcd2X"
-	DS_Replication_Get_Changes_In_Filtered_Set    = "89e95b76-444d-4c62-991a-0facbeda640cX"
+	DS_Replication_Get_Changes_All                = "1131f6ad-9c07-11d1-f79f-00c04fc2dcd2"
+	DS_Replication_Get_Changes_In_Filtered_Set    = "89e95b76-444d-4c62-991a-0facbeda640c"
 	DS_Replication_Manage_Topology                = "1131f6ac-9c07-11d1-f79f-00c04fc2dcd2"
-	DS_Replication_Monitor_Topology               = "f98340fb-7c5b-4cdb-a00b-2ebdfa115a96X"
+	DS_Replication_Monitor_Topology               = "f98340fb-7c5b-4cdb-a00b-2ebdfa115a96"
 	DS_Replication_Synchronize                    = "1131f6ab-9c07-11d1-f79f-00c04fc2dcd2"
 	Enable_Per_User_Reversibly_Encrypted_Password = "05c74c5e-4deb-43b4-bd9f-86664c2a7fd5"
 	Generate_RSoP_Logging                         = "b7b1b3de-ab09-4242-9e30-9980e5d322f7"
@@ -41,8 +42,8 @@ const (
 	msmq_Receive_journal                          = "06bd3203-df3e-11d1-9c86-006008764d0e"
 	msmq_Send                                     = "06bd3202-df3e-11d1-9c86-006008764d0e"
 	Open_Address_Book                             = "a1990816-4298-11d1-ade2-00c04fd8d5cd"
-	Read_Only_Replication_Secret_Synchronization  = "1131f6ae-9c07-11d1-f79f-00c04fc2dcd2X"
-	Reanimate_Tombstones                          = "45ec5156-db7e-47bb-b53f-dbeb2d03c40fX"
+	Read_Only_Replication_Secret_Synchronization  = "1131f6ae-9c07-11d1-f79f-00c04fc2dcd2"
+	Reanimate_Tombstones                          = "45ec5156-db7e-47bb-b53f-dbeb2d03c40f"
 	Recalculate_Hierarchy                         = "0bc1554e-0a99-11d1-adbb-00c04fd8d5cd"
 	Recalculate_Security_Inheritance              = "62dd28a8-7f46-11d2-b9ad-00c04f79f805"
 	Receive_As                                    = "ab721a56-1e2f-11d0-9819-00aa0040529b"
@@ -55,7 +56,7 @@ const (
 	Send_As = "ab721a54-1e2f-11d0-9819-00aa0040529b"
 	Send_To = "ab721a55-1e2f-11d0-9819-00aa0040529b"
 
-	Unexpire_Password                = "ccc2dc7d-a6ad-4a7a-8846-c04e3cc53501X"
+	Unexpire_Password                = "ccc2dc7d-a6ad-4a7a-8846-c04e3cc53501"
 	Update_Password_Not_Required_Bit = "280f369c-67c7-438e-ae98-1d46f3c6f541"
 	Update_Schema_Cache              = "be2bb760-7f46-11d2-b9ad-00c04f79f805"
 	User_Change_Password             = "ab721a53-1e2f-11d0-9819-00aa0040529b"

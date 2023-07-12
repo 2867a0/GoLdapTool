@@ -5,18 +5,19 @@ import (
 	"fmt"
 	"github.com/go-ldap/ldap/v3"
 	"goLdapTools/log"
+	"goLdapTools/transform"
 	"testing"
 )
 
 func TestGetSDDLFromLdap(t *testing.T) {
-	log.Init(true)
+	log.Init(false)
 	conn, err := ldap.Dial("tcp", fmt.Sprintf("%s:389", "dc.test.lab"))
 	if err != nil {
 		fmt.Printf(err.Error())
 		return
 	}
 
-	err = conn.Bind("administrator@test.lab", "123.com")
+	err = conn.Bind("john@test.lab", "123.com")
 	if err != nil {
 		fmt.Printf(err.Error())
 		return
@@ -27,7 +28,7 @@ func TestGetSDDLFromLdap(t *testing.T) {
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 		"(objectclass=domain)",
 		[]string{"nTSecurityDescriptor"},
-		nil,
+		[]ldap.Control{&transform.ControlMicrosoftSDFlags{ControlValue: 4}},
 	)
 	searchResults, err := conn.Search(searchRequest)
 	if err != nil {
@@ -44,7 +45,7 @@ func TestGetSDDLFromLdap(t *testing.T) {
 					return
 				}
 				resultStrings := sr.DataToString()
-				fmt.Printf("dump nTSecurityDescriptor string: \n%s\n", resultStrings.String())
+				log.PrintSuccessf("dump nTSecurityDescriptor string: \n%s\n", resultStrings.String())
 			}
 		}
 	}
