@@ -5,7 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	"goLdapTools/log"
 	"goLdapTools/search"
-	"goLdapTools/transform"
+	"goLdapTools/transform/sddl/control"
 )
 
 var allUserCmd = &cobra.Command{
@@ -13,7 +13,7 @@ var allUserCmd = &cobra.Command{
 	Short: "search all user",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		searchCommand, ldapConnecter := getLoginHandle(cmd)
+		searchCommand, ldapConnecter := getSearchHandle(cmd)
 
 		pau := search.NewPluginAllUser(searchCommand)
 
@@ -31,11 +31,11 @@ var dcsyncUserCmd = &cobra.Command{
 	Short: "search dcsync user",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		searchCommand, ldapConnecter := getLoginHandle(cmd)
+		searchCommand, ldapConnecter := getSearchHandle(cmd)
 
 		// control value = 4 只查询dacl
 		dcsyncSearch := search.NewPluginDCSyncUser(searchCommand)
-		entries, err := dcsyncSearch.Search(ldapConnecter, []ldap.Control{&transform.ControlMicrosoftSDFlags{ControlValue: 4}})
+		entries, err := dcsyncSearch.Search(ldapConnecter, []ldap.Control{&control.ControlMicrosoftSDFlags{ControlValue: 4}})
 		if err != nil {
 			log.PrintErrorf("Search DCSync user error: %s", err.Error())
 			return

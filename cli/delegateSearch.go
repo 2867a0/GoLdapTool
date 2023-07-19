@@ -11,7 +11,7 @@ var rbcdCmd = &cobra.Command{
 	Short: "search rbcd",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		searchCommand, ldapConnecter := getLoginHandle(cmd)
+		searchCommand, ldapConnecter := getSearchHandle(cmd)
 
 		pRBCD := search.NewPluginRBCD(searchCommand)
 

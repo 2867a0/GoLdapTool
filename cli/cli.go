@@ -14,37 +14,24 @@ import (
 const (
 	domainNameStr = "domain-name"
 	userStr       = "username"
-	passwordStr   = "password"
+	passStr       = "password"
 	baseDnStr     = "base-dn"
 	sslStr        = "ssl"
-
-	dnStr         = "dn"
-	customStr     = "custom"
-	additionalStr = "extra"
-	exportStr     = "export"
 )
 
 func init() {
 	//global argument
 	rootCmd.PersistentFlags().StringP(domainNameStr, "d", "", "domain name")
 	rootCmd.PersistentFlags().StringP(userStr, "u", "", "username")
-	rootCmd.PersistentFlags().StringP(passwordStr, "p", "", "password")
+	rootCmd.PersistentFlags().StringP(passStr, "p", "", "password")
 	rootCmd.PersistentFlags().StringP(baseDnStr, "b", "", "Specify DN (ou=xx,dc=xx,dc=xx)")
 	rootCmd.PersistentFlags().BoolP(sslStr, "s", false, "Use ssl to connect to ldap. default false")
 
-	//search mode argument
-	searchCmd.PersistentFlags().StringP(dnStr, "n", "", "search dn")
-	searchCmd.PersistentFlags().StringP(customStr, "f", "", "Use custom search syntax")
-	searchCmd.PersistentFlags().StringP(additionalStr, "a", "", "Search for specified ldap attributes")
-	searchCmd.PersistentFlags().StringP(exportStr, "o", "", "save result to file.")
+	//search mode
 	rootCmd.AddCommand(searchCmd)
 
-	// 委派搜索注册
-	searchCmd.AddCommand(rbcdCmd)
-
-	// 用户类搜索注册
-	searchCmd.AddCommand(allUserCmd)
-	searchCmd.AddCommand(dcsyncUserCmd)
+	//add mode
+	rootCmd.AddCommand(addCmd)
 }
 
 var rootCmd = &cobra.Command{

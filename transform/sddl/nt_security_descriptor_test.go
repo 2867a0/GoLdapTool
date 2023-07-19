@@ -4,20 +4,22 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/go-ldap/ldap/v3"
+	"goLdapTools/conn"
 	"goLdapTools/log"
-	"goLdapTools/transform"
+	"goLdapTools/transform/sddl/control"
 	"testing"
 )
 
 func TestGetSDDLFromLdap(t *testing.T) {
 	log.Init(false)
-	conn, err := ldap.Dial("tcp", fmt.Sprintf("%s:389", "dc.test.lab"))
-	if err != nil {
-		fmt.Printf(err.Error())
-		return
+	config := &conn.ConnectConfig{
+		Address:  "dc.test.lab",
+		UserName: "administrator@test.lab",
+		Password: "123.com",
+		BaseDN:   "dc=test,dc=lab",
+		SSLConn:  false,
 	}
-
-	err = conn.Bind("john@test.lab", "123.com")
+	connect, err := conn.LdapConnect(config)
 	if err != nil {
 		fmt.Printf(err.Error())
 		return
@@ -28,9 +30,9 @@ func TestGetSDDLFromLdap(t *testing.T) {
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 		"(objectclass=domain)",
 		[]string{"nTSecurityDescriptor"},
-		[]ldap.Control{&transform.ControlMicrosoftSDFlags{ControlValue: 4}},
+		[]ldap.Control{&control.ControlMicrosoftSDFlags{ControlValue: 4}},
 	)
-	searchResults, err := conn.Search(searchRequest)
+	searchResults, err := connect.Conn.Search(searchRequest)
 	if err != nil {
 		log.PrintErrorf("search ldap error: %s", err.Error())
 		return
@@ -44,7 +46,7 @@ func TestGetSDDLFromLdap(t *testing.T) {
 					log.PrintErrorf("%s\n%s\n", "resolve nTSecurityDescriptor error:", err.Error())
 					return
 				}
-				resultStrings := sr.DataToString()
+				resultStrings := sr.DataToString(v.ByteValues[0])
 				log.PrintSuccessf("dump nTSecurityDescriptor string: \n%s\n", resultStrings.String())
 			}
 		}
@@ -205,105 +207,8 @@ func TestSDDLResolve(t *testing.T) {
 		return
 	}
 
-	//sddlString := sr.DataToString()
-	//fmt.Printf(sddlString.String())
-
-	//DataToString 头
-	fmt.Printf("NtSecurityDescriptor header:\n    ")
-	for i, v := range sr.RawData[0:20] {
-		fmt.Printf("%02x ", v)
-
-		if (i+1)%16 == 0 {
-			fmt.Printf("\n    ")
-		}
-	}
-	fmt.Printf("\n")
-	fmt.Printf("    Revision:    %x\n", sr.Revision)
-	fmt.Printf("    Sbz1:        %x\n", sr.Sbz1)
-	fmt.Printf("    Control:     %d\n", sr.Control.Value)
-	fmt.Printf("    OffsetOwner: %d\n", sr.OffsetOwner.Value)
-	fmt.Printf("    OffsetGroup: %d\n", sr.OffsetGroup.Value)
-	fmt.Printf("    OffsetSacl:  %d\n", sr.OffsetSacl.Value)
-	fmt.Printf("    OffsetDacl:  %d\n", sr.OffsetDacl.Value)
-	fmt.Printf("    OwnerSid:    %s\n", sr.OwnerSid.Value)
-	fmt.Printf("    GroupSid:    %s\n", sr.GroupSid.Value)
-	fmt.Printf("    Sacl:        %p\n", sr.Sacl)
-	fmt.Printf("\n")
-
-	//Sacl
-	fmt.Printf("Sacl header:")
-	for _, v := range sr.RawData[20:28] {
-		fmt.Printf("%02x ", v)
-	}
-	fmt.Printf("\n")
-	fmt.Printf("    Revision:  %x\n", sr.Sacl.Header.Revision)
-	fmt.Printf("    Sbz1:      %x\n", sr.Sacl.Header.Sbz1)
-	fmt.Printf("    Acl Size:  %d\n", sr.Sacl.Header.AclSize.Value)
-	fmt.Printf("    Ace Count: %d\n", sr.Sacl.Header.AceCount.Value)
-	fmt.Printf("    Sbz2:      %d\n", sr.Sacl.Header.Sbz2.Value)
-	fmt.Printf("\n")
-
-	// Sacl Ace
-	fmt.Printf("==========Sacl Ace(%d)==========\n", len(sr.Sacl.Aces))
-	for index, ace := range sr.Sacl.Aces {
-		fmt.Printf("%d\n", index+1)
-		fmt.Printf("    Ace Type:            %x\n", ace.AceType)
-		fmt.Printf("    Ace Flags:           %x\n", ace.AceFlags)
-		fmt.Printf("    Ace Size:            %d\n", ace.AceSize.Value)
-
-		fmt.Printf("    Ace Mask:            %d\n", ace.AceMask.Value)
-		fmt.Printf("    Extended:            %s\n", ace.Extended.Value)
-
-		if ace.ObjectType != nil {
-			fmt.Printf("    ObjectType:          %s\n", ace.ObjectType.Value)
-		}
-
-		if ace.InheritedObjectType != nil {
-			fmt.Printf("    InheritedObjectType: %s\n", ace.InheritedObjectType.Value)
-		}
-
-		fmt.Printf("    SID                : %s\n", ace.SID.Value)
-		fmt.Printf("\n")
-	}
-	fmt.Printf("============================\n\n")
-
-	//Dacl
-	fmt.Printf("Dacl header:")
-	for _, v := range sr.RawData[sr.OffsetDacl.Value.(uint32) : sr.OffsetDacl.Value.(uint32)+8] {
-		fmt.Printf("%02x ", v)
-	}
-	fmt.Printf("\n")
-	fmt.Printf("    Revision:  %x\n", sr.Dacl.Header.Revision)
-	fmt.Printf("    Sbz1:      %x\n", sr.Dacl.Header.Sbz1)
-	fmt.Printf("    Acl Size:  %d\n", sr.Dacl.Header.AclSize.Value)
-	fmt.Printf("    Ace Count: %d\n", sr.Dacl.Header.AceCount.Value)
-	fmt.Printf("    Sbz2:      %x\n", sr.Dacl.Header.Sbz2.RawData)
-
-	// Dacl Ace
-	fmt.Printf("==========Dacl Ace(%d)==========\n", len(sr.Dacl.Aces))
-	for index, ace := range sr.Dacl.Aces {
-		fmt.Printf("%d\n", index+1)
-		fmt.Printf("    Ace Type:            %x\n", ace.AceType)
-		fmt.Printf("    Ace Flags:           %x\n", ace.AceFlags)
-		fmt.Printf("    Ace Size:            %d\n", ace.AceSize.Value)
-
-		fmt.Printf("    Ace Mask:            %d\n", ace.AceMask.Value)
-		fmt.Printf("    Extended:            %s\n", ace.Extended.Value)
-
-		if ace.ObjectType != nil {
-			fmt.Printf("    ObjectType:          %s\n", ace.ObjectType.Value)
-		}
-
-		if ace.InheritedObjectType != nil {
-			fmt.Printf("    InheritedObjectType: %s\n", ace.InheritedObjectType.Value)
-		}
-
-		fmt.Printf("    SID                : %s\n", ace.SID.Value)
-		fmt.Printf("\n")
-	}
-	fmt.Printf("============================\n\n")
-
-	fmt.Printf("\n")
+	sddlString := sr.DataToString(nil)
+	fmt.Printf(sddlString.String())
 }
 
 // 2字节转换为整数

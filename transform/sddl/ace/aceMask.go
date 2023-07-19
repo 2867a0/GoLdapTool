@@ -1,6 +1,9 @@
-package sddl
+package ace
 
-import "fmt"
+import (
+	"fmt"
+	"goLdapTools/transform/sddl/datatype"
+)
 
 const (
 	GENERIC_READ           = 0x80000000
@@ -32,23 +35,23 @@ var AceMaskBitMap = map[string]uint32{
 }
 
 type AceMaskStruct struct {
-	DataType
+	datatype.DataType
 }
 
 func (aceMask *AceMaskStruct) HasPriv(priv uint32) (bool, error) {
-	data, err := getValue(aceMask.RawData)
+	data, err := datatype.GetValue(aceMask.RawData)
 	if err != nil {
 		return false, err
 	}
 
-	return data&priv == priv, nil
+	return data.(uint32)&priv == priv, nil
 }
 
 func (aceMask *AceMaskStruct) setPriv(priv uint32) {
 	aceMask.Value = aceMask.Value.(uint32) | priv
 }
 
-func (aceMask *AceMaskStruct) getAceMaskString() (string, error) {
+func (aceMask *AceMaskStruct) GetAceMaskString() (string, error) {
 	var privStr string
 	for k, v := range AceMaskBitMap {
 		hasPriv, err := aceMask.HasPriv(v)

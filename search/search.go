@@ -11,10 +11,13 @@ import (
 
 // SearchFlag 搜索条目参数结构体
 type SearchFlag struct {
-	Dn         string
-	Custom     string
+	Dn string
+	// filter
+	Custom string
+	// attribute
 	Additional []string
-	Exported   string
+	// 导出
+	Exported string
 }
 
 type SearchInterface interface {
@@ -31,16 +34,18 @@ type PluginBase struct {
 
 // NewPluginBase 父类默认初始化搜索参数
 func NewPluginBase(defaultDN string, defaultFilter string, defaultAttribute []string, flag *SearchFlag) PluginBase {
-	if flag.Dn != "" {
-		defaultDN = flag.Dn
-	}
+	if flag != nil {
+		if flag.Dn != "" {
+			defaultDN = flag.Dn
+		}
 
-	if flag.Custom != "" {
-		defaultFilter = flag.Custom
-	}
+		if flag.Custom != "" {
+			defaultFilter = flag.Custom
+		}
 
-	if len(flag.Additional) != 0 {
-		defaultAttribute = append(defaultAttribute, flag.Additional...)
+		if len(flag.Additional) != 0 {
+			defaultAttribute = append(defaultAttribute, flag.Additional...)
+		}
 	}
 
 	// 过滤重复元素
@@ -55,7 +60,7 @@ func NewPluginBase(defaultDN string, defaultFilter string, defaultAttribute []st
 
 // Search 父类默认搜索方法
 func (pluginBase *PluginBase) Search(conn *conn.Connector, controls []ldap.Control) ([]*ldap.Entry, error) {
-	log.PrintDebugf("\nSearch info:\n"+
+	log.PrintInfof("Search info:\n"+
 		"    base dn:   %s\n"+
 		"    filter:    %s\n"+
 		"    attribute: %s\n", pluginBase.BaseDN, pluginBase.Filter, pluginBase.Attributes)
@@ -91,7 +96,7 @@ func (pluginBase PluginBase) PrintResult(entries []*ldap.Entry) {
 					log.PrintErrorf("%s\n%s\n", "resolve nTSecurityDescriptor error:", err.Error())
 					return
 				}
-				resultStrings := sr.DataToString()
+				resultStrings := sr.DataToString(v.ByteValues[0])
 				log.PrintDebugf("dump nTSecurityDescriptor string: \n%s\n", resultStrings.String())
 			} else {
 				attribute = fmt.Sprintf("%s\n    %s: %s", attribute, v.Name, strings.Join(v.Values, " "))

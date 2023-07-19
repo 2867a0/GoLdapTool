@@ -17,8 +17,8 @@ var debugPrefix = "♻"
 var errorPrefix = "❌"
 var warningPrefix = "❗"
 
-func Init(isDebug bool) {
-	if isDebug {
+func Init(isRelease bool) {
+	if !isRelease {
 		template = "[{{datetime}}] [{{level}}] {{message}} {{data}} {{extra}}\n"
 		std = newStdLogger(slog.DebugLevel)
 		PrintDebug("debug mode is on")

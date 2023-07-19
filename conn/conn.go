@@ -13,51 +13,39 @@ type Connector struct {
 }
 
 func LdapConnect(config *ConnectConfig) (*Connector, error) {
-	//config := ConnectConfig{
-	//	Address:  "192.168.1.100:389",
-	//	UserName: "administrator@test.lab",
-	//	Password: "123.com",
-	//	BaseDN:   "dc=test,dc=lab",
-	//}
-	//tlsConfig, err := getTLSconfig("192.168.1.100")
-	//conn, err := ldap.DialTLS("tcp", config.Address, tlsConfig)
-
 	var conn *ldap.Conn
 	var err error
 
 	//非加密连接
 	if !config.SSLConn {
-		log.PrintDebugf("Trying to connecting server %s:389", config.Address)
+		log.PrintDebugf("Trying to connecting server Ldap://%s:389", config.Address)
 		conn, err = ldap.Dial("tcp", fmt.Sprintf("%s:389", config.Address))
 		if err != nil {
 			return nil, err
 		}
-
-		log.PrintDebugf("Trying to binding server")
-		err = conn.Bind(config.UserName, config.Password)
+	} else {
+		// SSL连接
+		log.PrintDebugf("Trying to connecting server Ldaps://%s:636", config.Address)
+		conn, err = ldap.DialTLS("tcp", fmt.Sprintf("%s:636", config.Address),
+			&tls.Config{InsecureSkipVerify: true})
 		if err != nil {
 			return nil, err
 		}
-
-		log.PrintSuccess("Binding success")
-	} else {
-		// TODO SSL连接
 	}
+
+	log.PrintDebugf("Trying to binding server")
+	err = conn.Bind(config.UserName, config.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	log.PrintSuccess("Binding success")
 
 	return &Connector{Conn: conn, Config: *config}, nil
 }
 
-func getTLSConfig(tlsName string) (tlsC *tls.Config, err error) {
-	if tlsName != "" {
-		tlsC = &tls.Config{
-			ServerName: tlsName,
-		}
-		return
-	}
-
-	fmt.Println("No TLS verification enabled! ***STRONGLY*** recommend adding a trust file to the config.")
-	tlsC = &tls.Config{
-		InsecureSkipVerify: true,
-	}
-	return
+func (conn *Connector) DoModify(dn string, control []ldap.Control, attrType string, attrVals []string) error {
+	modifyReq := ldap.NewModifyRequest(dn, control)
+	modifyReq.Replace(attrType, attrVals)
+	return conn.Conn.Modify(modifyReq)
 }

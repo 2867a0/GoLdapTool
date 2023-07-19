@@ -5,7 +5,7 @@ import (
 	"github.com/go-ldap/ldap/v3"
 	"goLdapTools/conn"
 	"goLdapTools/log"
-	"goLdapTools/transform"
+	"goLdapTools/transform/sddl/sid"
 )
 
 type PluginRBCD struct {
@@ -35,7 +35,7 @@ func (pluginRBCD *PluginRBCD) Search(conn *conn.Connector, controls []ldap.Contr
 
 		for _, attribute := range entry.Attributes {
 			if attribute.Name == "mS-DS-CreatorSID" {
-				sidString := transform.SidToString(entry.GetRawAttributeValue("mS-DS-CreatorSID"))
+				sidString := sid.SidToString(entry.GetRawAttributeValue("mS-DS-CreatorSID"))
 				log.PrintDebugf("get sid: %s", sidString)
 
 				pluginRBCD.Filter = fmt.Sprintf("(&(objectCategory=person)(objectSid=%s))", sidString)

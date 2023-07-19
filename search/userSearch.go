@@ -6,6 +6,7 @@ import (
 	"goLdapTools/conn"
 	"goLdapTools/log"
 	"goLdapTools/transform/sddl"
+	"goLdapTools/transform/sddl/ace"
 	"strings"
 )
 
@@ -52,31 +53,31 @@ func (pluginDcSync *PluginDCSyncUser) Search(conn *conn.Connector, controls []ld
 				return nil, err
 			}
 
-			log.PrintSuccessf("Get dacl ace count: %d", sddlData.Dacl.Header.AceCount.Value.(uint32))
+			log.PrintSuccessf("Get dacl aceEntry count: %d", sddlData.Dacl.AceCount.Value.(uint32))
 
 			dcsyncUserMap := make(map[string]string)
-			for _, ace := range sddlData.Dacl.Aces {
+			for _, aceEntry := range sddlData.Dacl.Aces {
 
 				// 跳过没用的sid
-				if len(strings.Split(ace.SID.Value.(string), "-")) <= 5 {
+				if len(strings.Split(aceEntry.SID.Value.(string), "-")) <= 5 {
 					continue
 				}
 
 				// 是5， 需要遍历
-				if ace.AceType == sddl.ACCESS_ALLOWED_OBJECT_ACE_TYPE && ace.Extended.Value.(string) == "ObjectType" {
-					objectTypeGuid := ace.ObjectType.Value.(string)
+				if aceEntry.AceType == ace.ACCESS_ALLOWED_OBJECT_ACE_TYPE && aceEntry.Extended.Value.(string) == "ObjectType" {
+					objectTypeGuid := aceEntry.ObjectType.Value.(string)
 
 					//dcsync
 					if strings.EqualFold(objectTypeGuid, sddl.DS_Replication_Get_Changes) ||
 						strings.EqualFold(objectTypeGuid, sddl.DS_Replication_Get_Changes_All) {
-						log.PrintDebugf("Get the DCSync permission user: %s", ace.SID.Value.(string))
+						log.PrintDebugf("Get the DCSync permission user: %s", aceEntry.SID.Value.(string))
 
-						dcsyncUserMap[ace.SID.Value.(string)] = ""
+						dcsyncUserMap[aceEntry.SID.Value.(string)] = ""
 					}
 				} else {
 					// 不是5, 则是完全访问权限
-					log.PrintDebugf("Get a full access account %s", ace.SID.Value.(string))
-					dcsyncUserMap[ace.SID.Value.(string)] = ""
+					log.PrintDebugf("Get a full access account %s", aceEntry.SID.Value.(string))
+					dcsyncUserMap[aceEntry.SID.Value.(string)] = ""
 				}
 			}
 

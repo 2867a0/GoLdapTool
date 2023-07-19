@@ -9,60 +9,30 @@ import (
 	"strings"
 )
 
-const (
-	dnStr         = "dn"
-	customStr     = "custom"
-	additionalStr = "extra"
-	exportStr     = "export"
-)
-
 func init() {
-	//search mode argument
-	searchCmd.PersistentFlags().StringP(dnStr, "n", "", "search dn")
-	searchCmd.PersistentFlags().StringP(customStr, "f", "", "Use custom search syntax")
-	searchCmd.PersistentFlags().StringP(additionalStr, "a", "", "Search for specified ldap attributes")
-	searchCmd.PersistentFlags().StringP(exportStr, "o", "", "save result to file.")
-
-	// 委派搜索注册
-	searchCmd.AddCommand(rbcdCmd)
-
-	// 用户类搜索注册
-	searchCmd.AddCommand(allUserCmd)
-	searchCmd.AddCommand(dcsyncUserCmd)
+	addCmd.AddCommand(userAddCmd)
 }
 
-var searchCmd = &cobra.Command{
-	Use:   "search",
-	Short: "search mode",
+var addCmd = &cobra.Command{
+	Use:   "add",
+	Short: "add mode",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		//自定义搜索
-		searchCommand, ldapConnecter := getSearchHandle(cmd)
 
-		pb := search.NewPluginBase("", "", []string{}, searchCommand)
-		entries, err := pb.Search(ldapConnecter, nil)
-		if err != nil {
-			log.PrintErrorf("custom search error: %s", err.Error())
-			return
-		}
-		pb.PrintResult(entries)
 	},
 }
 
-func getSearchHandle(cmd *cobra.Command) (*search.SearchFlag, *conn.Connector) {
+func getAddHandle(cmd *cobra.Command) (*search.SearchFlag, *conn.Connector) {
 	globalCommand, err := parseGlobalCommand(cmd)
 	if err != nil {
 		log.PrintErrorf("Parse global command error: %s", err.Error())
 		os.Exit(1)
 	}
 
-	searchCommand, err := parseSearchCommand(cmd)
+	addCommand, err := parseAddCommand(cmd)
 	if err != nil {
 		log.PrintErrorf("Parse search command error: %s", err.Error())
 		os.Exit(1)
-	}
-	if searchCommand.Dn == "" {
-		searchCommand.Dn = globalCommand.BaseDN
 	}
 
 	ldapConnecter, err := conn.LdapConnect(globalCommand)
@@ -71,10 +41,10 @@ func getSearchHandle(cmd *cobra.Command) (*search.SearchFlag, *conn.Connector) {
 		os.Exit(1)
 	}
 
-	return searchCommand, ldapConnecter
+	return addCommand, ldapConnecter
 }
 
-func parseSearchCommand(cmd *cobra.Command) (*search.SearchFlag, error) {
+func parseAddCommand(cmd *cobra.Command) (*search.SearchFlag, error) {
 	dn, err := cmd.Flags().GetString(dnStr)
 	if err != nil {
 		log.PrintDebugf("Failed to parse --dn-- flag %s", err)
