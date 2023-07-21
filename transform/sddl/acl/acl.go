@@ -214,7 +214,7 @@ func (dacl *DaclHeader) AddAce(sid string, objectType string) (uint16, error) {
 	// 写入Ace到Dacl.Aces中
 	dacl.Aces = append(dacl.Aces, ace)
 
-	// 更新Ace数量、大小,更新nTSecurityDescriptor头中的数据偏移(Dacl、offsetOwner、offsetGroup)
+	// 更新Ace数量、大小,更新Dacl
 	dacl.AceCount.Value = dacl.AceCount.Value.(uint16) + 1
 	dacl.AclSize.Value = dacl.AclSize.Value.(uint16) + ace.AceSize.Value.(uint16)
 	dacl.update()

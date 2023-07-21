@@ -1,4 +1,4 @@
-package cli
+package search
 
 import (
 	"github.com/spf13/cobra"
@@ -11,11 +11,15 @@ var rbcdCmd = &cobra.Command{
 	Short: "search rbcd",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		searchCommand, ldapConnecter := getSearchHandle(cmd)
+		searchCommand, err := getSearchHandle(cmd)
+		if err != nil {
+			log.PrintError(err.Error())
+			return
+		}
 
 		pRBCD := search.NewPluginRBCD(searchCommand)
 
-		entries, err := pRBCD.Search(ldapConnecter, nil)
+		entries, err := pRBCD.Search(searchCommand.Connector, nil)
 		if err != nil {
 			log.PrintErrorf("search all user error: %s", err.Error())
 			return

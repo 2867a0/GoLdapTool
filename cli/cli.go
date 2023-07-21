@@ -1,37 +1,29 @@
 package cli
 
 import (
-	"errors"
-	"fmt"
+	"github.com/spf13/cobra"
+	"goLdapTools/cli/global"
+	"goLdapTools/cli/modify"
+	"goLdapTools/cli/search"
 	"goLdapTools/conn"
 	"goLdapTools/log"
 	"os"
-	"strings"
-
-	"github.com/spf13/cobra"
-)
-
-const (
-	domainNameStr = "domain-name"
-	userStr       = "username"
-	passStr       = "password"
-	baseDnStr     = "base-dn"
-	sslStr        = "ssl"
 )
 
 func init() {
 	//global argument
-	rootCmd.PersistentFlags().StringP(domainNameStr, "d", "", "domain name")
-	rootCmd.PersistentFlags().StringP(userStr, "u", "", "username")
-	rootCmd.PersistentFlags().StringP(passStr, "p", "", "password")
-	rootCmd.PersistentFlags().StringP(baseDnStr, "b", "", "Specify DN (ou=xx,dc=xx,dc=xx)")
-	rootCmd.PersistentFlags().BoolP(sslStr, "s", false, "Use ssl to connect to ldap. default false")
+	rootCmd.PersistentFlags().StringP(global.DomainNameStr, "d", "", "domain name")
+	rootCmd.PersistentFlags().StringP(global.UserStr, "u", "", "username")
+	rootCmd.PersistentFlags().StringP(global.PassStr, "p", "", "password")
+	rootCmd.PersistentFlags().StringP(global.BaseDnStr, "b", "", "Specify DN (ou=xx,dc=xx,dc=xx)")
+	rootCmd.PersistentFlags().BoolP(global.SslStr, "s", false, "Use ssl to connect to ldap. default false")
+	rootCmd.PersistentFlags().StringP(global.ExportStr, "o", "", "save result to file.")
 
 	//search mode
-	rootCmd.AddCommand(searchCmd)
+	rootCmd.AddCommand(search.SearchCmd)
 
-	//add mode
-	rootCmd.AddCommand(addCmd)
+	//modify mode
+	rootCmd.AddCommand(modify.AddCmd)
 }
 
 var rootCmd = &cobra.Command{
@@ -41,7 +33,7 @@ var rootCmd = &cobra.Command{
 with functions including searching and modifying Ldap entry attributes`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := parseGlobalCommand(cmd)
+		config, err := global.ParseGlobalCommand(cmd)
 		if err != nil {
 			log.PrintErrorf("Parse global command error: %s", err.Error())
 			os.Exit(1)
@@ -51,17 +43,16 @@ with functions including searching and modifying Ldap entry attributes`,
 			"    server:   %s\n"+
 			"    username: %s\n"+
 			"    password: %s\n"+
-			"    dn:       %s", config.Address, config.UserName, config.Password, config.BaseDN)
+			"    dn:       %s", config.DomainName, config.UserName, config.Password, config.BaseDN)
 
 		// 不使用搜索模块，仅登陆
-		ldapConnecter, err := conn.LdapConnect(config)
+		ldapConnector, err := conn.LdapConnect(config)
 		if err != nil {
 			log.PrintErrorf("error: %s", err.Error())
 			os.Exit(1)
 		}
 
-		log.PrintSuccessf("Connect %s successes", ldapConnecter.Config.Address)
-
+		log.PrintSuccessf("Connect %s successes", ldapConnector.Config.DomainName)
 	},
 }
 
@@ -70,52 +61,4 @@ func Execute() {
 		log.PrintError(err)
 		os.Exit(1)
 	}
-}
-
-func parseGlobalCommand(cmd *cobra.Command) (config *conn.ConnectConfig, err error) {
-	domainName, err := cmd.Flags().GetString(domainNameStr)
-	if err != nil {
-		log.PrintDebugf("Failed to parse --domainName-- flag %s", err)
-		return nil, err
-	}
-	if domainName == "" {
-		return nil, errors.New("domain name is not specified")
-	}
-
-	u, err := cmd.Flags().GetString(userStr)
-	if err != nil {
-		log.PrintDebugf("Failed to parse --username-- flag %s", err)
-		return nil, err
-	}
-
-	password, err := cmd.Flags().GetString(passwordStr)
-	if err != nil {
-		log.PrintDebugf("Failed to parse --password-- flag %s", err)
-		return nil, err
-	}
-
-	domainNameArr := strings.Split(domainName, ".")
-	baseDN, err := cmd.Flags().GetString(baseDnStr)
-	if err != nil {
-		log.PrintDebugf("Failed to parse --base dn-- flag %s", err)
-		return nil, err
-	}
-	if baseDN == "" {
-		baseDN = fmt.Sprintf("dc=%s,dc=%s", domainNameArr[len(domainNameArr)-2], domainNameArr[len(domainNameArr)-1])
-	}
-
-	ssl, err := cmd.Flags().GetBool(sslStr)
-	if err != nil {
-		log.PrintErrorf("Failed to parse --ssl-- flag %s", err)
-		return nil, err
-	}
-
-	userName := fmt.Sprintf("%s@%s.%s", u, domainNameArr[len(domainNameArr)-2], domainNameArr[len(domainNameArr)-1])
-	return &conn.ConnectConfig{
-		Address:  domainName,
-		UserName: userName,
-		Password: password,
-		BaseDN:   baseDN,
-		SSLConn:  ssl,
-	}, nil
 }

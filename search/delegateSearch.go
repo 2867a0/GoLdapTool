@@ -12,12 +12,12 @@ type PluginRBCD struct {
 	PluginBase
 }
 
-func NewPluginRBCD(flag *SearchFlag) PluginRBCD {
+func NewPluginRBCD(flag *SearchConfig) PluginRBCD {
 
 	filter := "(objectCategory=Computer)"
 	attributes := []string{"msDS-AllowedToActOnBehalfOfOtherIdentity", "mS-DS-CreatorSID"}
 
-	return PluginRBCD{NewPluginBase("", filter, attributes, flag)}
+	return PluginRBCD{NewPluginBase(filter, attributes, flag)}
 }
 
 func (pluginRBCD *PluginRBCD) Search(conn *conn.Connector, controls []ldap.Control) ([]*ldap.Entry, error) {

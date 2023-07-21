@@ -1,22 +1,17 @@
-package cli
+package modify
 
 import (
 	"github.com/spf13/cobra"
-	"goLdapTools/change"
+	"goLdapTools/cli/global"
 	"goLdapTools/conn"
 	"goLdapTools/log"
-	"os"
+	"goLdapTools/modify"
 )
 
 const (
 	usernameStr = "add-user"
 	passwordStr = "add-pass"
 )
-
-type addCmdFlag struct {
-	username string
-	password string
-}
 
 func init() {
 	userAddCmd.Flags().StringP(usernameStr, "", "", "username to add")
@@ -28,42 +23,55 @@ var userAddCmd = &cobra.Command{
 	Short: "add user",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		command, conn := getUserAddHandle(cmd)
-		err := change.AddUser(conn, nil, command.username, command.password)
+		userAddConfig, err := getUserAddHandle(cmd)
+		if err != nil {
+			log.PrintError(err.Error())
+			return
+		}
+		if !userAddConfig.Global.SSLConn {
+			log.PrintErrorf("Adding user operations requires the --ssl parameter")
+			return
+		}
+
+		err = modify.AddUser(userAddConfig.Connector, nil, userAddConfig.AddUser.AddUser, userAddConfig.AddUser.AddPass)
 		if err != nil {
 			log.PrintErrorf("Add user error:\n%s", err.Error())
-			os.Exit(-1)
+			return
 		}
 	},
 }
 
-func getUserAddHandle(cmd *cobra.Command) (*addCmdFlag, *conn.Connector) {
-	globalCommand, err := parseGlobalCommand(cmd)
+func getUserAddHandle(cmd *cobra.Command) (*modify.UserAddConfig, error) {
+	globalCommand, err := global.ParseGlobalCommand(cmd)
 	if err != nil {
 		log.PrintErrorf("Parse global command error: %s", err.Error())
-		os.Exit(1)
+		return nil, err
 	}
 
 	username, err := cmd.Flags().GetString(usernameStr)
 	if err != nil {
 		log.PrintErrorf("Parse username command error: %s", err.Error())
-		os.Exit(1)
+		return nil, err
 	}
 
 	password, err := cmd.Flags().GetString(passwordStr)
 	if err != nil {
 		log.PrintErrorf("Parse password command error: %s", err.Error())
-		os.Exit(1)
+		return nil, err
 	}
 
 	ldapConnecter, err := conn.LdapConnect(globalCommand)
 	if err != nil {
 		log.PrintErrorf("ldap connect error: %s", err)
-		os.Exit(1)
+		return nil, err
 	}
 
-	return &addCmdFlag{
-		username: username,
-		password: password,
-	}, ldapConnecter
+	return &modify.UserAddConfig{
+		AddUser: &modify.AddUserParam{
+			AddUser: username,
+			AddPass: password,
+		},
+		Global:    globalCommand,
+		Connector: ldapConnecter,
+	}, nil
 }

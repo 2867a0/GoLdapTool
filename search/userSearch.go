@@ -14,23 +14,23 @@ type PluginAllUser struct {
 	PluginBase
 }
 
-func NewPluginAllUser(flag *SearchFlag) PluginAllUser {
+func NewPluginAllUser(flag *SearchConfig) PluginAllUser {
 
 	filter := "(objectclass=user)"
 	attributes := []string{"SAMAccountName", "lastLogon"}
 
-	return PluginAllUser{NewPluginBase("", filter, attributes, flag)}
+	return PluginAllUser{NewPluginBase(filter, attributes, flag)}
 }
 
 type PluginDCSyncUser struct {
 	PluginBase
 }
 
-func NewPluginDCSyncUser(flag *SearchFlag) PluginDCSyncUser {
+func NewPluginDCSyncUser(flag *SearchConfig) PluginDCSyncUser {
 	filter := "(objectClass=domain)"
 	attributes := []string{"nTSecurityDescriptor"}
 
-	return PluginDCSyncUser{NewPluginBase("", filter, attributes, flag)}
+	return PluginDCSyncUser{NewPluginBase(filter, attributes, flag)}
 }
 func (pluginDcSync *PluginDCSyncUser) Search(conn *conn.Connector, controls []ldap.Control) ([]*ldap.Entry, error) {
 	var results []*ldap.Entry
@@ -53,7 +53,7 @@ func (pluginDcSync *PluginDCSyncUser) Search(conn *conn.Connector, controls []ld
 				return nil, err
 			}
 
-			log.PrintSuccessf("Get dacl aceEntry count: %d", sddlData.Dacl.AceCount.Value.(uint32))
+			log.PrintSuccessf("Get dacl aceEntry count: %d", sddlData.Dacl.AceCount.Value.(uint16))
 
 			dcsyncUserMap := make(map[string]string)
 			for _, aceEntry := range sddlData.Dacl.Aces {

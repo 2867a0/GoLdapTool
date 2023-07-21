@@ -3,21 +3,25 @@ package search
 import (
 	"fmt"
 	"github.com/go-ldap/ldap/v3"
+	"goLdapTools/cli/global"
 	"goLdapTools/conn"
 	"goLdapTools/log"
 	"goLdapTools/transform/sddl"
 	"strings"
 )
 
-// SearchFlag 搜索条目参数结构体
-type SearchFlag struct {
-	Dn string
+type SearchConfig struct {
+	Global    *global.GlobalCommand
+	Attr      *SearchAttr
+	Connector *conn.Connector
+}
+
+// SearchAttr 搜索条目参数结构体
+type SearchAttr struct {
 	// filter
 	Custom string
 	// attribute
 	Additional []string
-	// 导出
-	Exported string
 }
 
 type SearchInterface interface {
@@ -33,18 +37,15 @@ type PluginBase struct {
 }
 
 // NewPluginBase 父类默认初始化搜索参数
-func NewPluginBase(defaultDN string, defaultFilter string, defaultAttribute []string, flag *SearchFlag) PluginBase {
-	if flag != nil {
-		if flag.Dn != "" {
-			defaultDN = flag.Dn
+func NewPluginBase(defaultFilter string, defaultAttribute []string, flag *SearchConfig) PluginBase {
+	// 更新属性
+	if flag.Attr != nil {
+		if flag.Attr.Custom != "" {
+			defaultFilter = flag.Attr.Custom
 		}
 
-		if flag.Custom != "" {
-			defaultFilter = flag.Custom
-		}
-
-		if len(flag.Additional) != 0 {
-			defaultAttribute = append(defaultAttribute, flag.Additional...)
+		if len(flag.Attr.Additional) != 0 {
+			defaultAttribute = append(defaultAttribute, flag.Attr.Additional...)
 		}
 	}
 
@@ -52,7 +53,7 @@ func NewPluginBase(defaultDN string, defaultFilter string, defaultAttribute []st
 	attributes := removeDuplicate(defaultAttribute)
 
 	return PluginBase{
-		BaseDN:     defaultDN,
+		BaseDN:     flag.Global.BaseDN,
 		Filter:     defaultFilter,
 		Attributes: attributes,
 	}
@@ -83,13 +84,11 @@ func (pluginBase *PluginBase) Search(conn *conn.Connector, controls []ldap.Contr
 
 // PrintResult 父类默认打印结果函数
 func (pluginBase PluginBase) PrintResult(entries []*ldap.Entry) {
-	attribute := ""
+	var result strings.Builder
 	for _, entry := range entries {
-		if attribute == "" {
-			attribute = entry.DN
-		}
-		for _, v := range entry.Attributes {
+		result.WriteString(fmt.Sprintf("%s\n", entry.DN))
 
+		for _, v := range entry.Attributes {
 			if v.Name == "nTSecurityDescriptor" {
 				sr, err := sddl.NewSecurityDescriptor(v.ByteValues[0])
 				if err != nil {
@@ -99,12 +98,12 @@ func (pluginBase PluginBase) PrintResult(entries []*ldap.Entry) {
 				resultStrings := sr.DataToString(v.ByteValues[0])
 				log.PrintDebugf("dump nTSecurityDescriptor string: \n%s\n", resultStrings.String())
 			} else {
-				attribute = fmt.Sprintf("%s\n    %s: %s", attribute, v.Name, strings.Join(v.Values, " "))
+				result.WriteString(fmt.Sprintf("    %s: %s\n", v.Name, strings.Join(v.Values, " ")))
 			}
 		}
-		attribute = fmt.Sprintf("%s\n", attribute)
 	}
-	log.PrintSuccessf("%s\n%s", "Search result:", attribute)
+	log.PrintSuccessf("%s\n%s", "Search result:", result.String())
+	log.PrintSuccessf("result count: %d\n", len(entries))
 }
 
 // 通过map主键唯一的特性过滤重复元素
