@@ -53,7 +53,7 @@ golang 实现的Ldap操作工具
 
 ### 2.0 TODO
 
-- [ ] 添加DCSync权限
+- [x] 添加DCSync权限
 - [ ] 激活用户
 
 其他补充  
