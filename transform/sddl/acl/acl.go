@@ -103,14 +103,14 @@ func (sacl *SaclHeader) ResolveSaclAces(allData []byte, aceCount int) error {
 	for i := 0; i < aceCount; i++ {
 		aceSize, err := datatype.GetValue(allData[offset+2 : offset+4])
 		if err != nil {
-			return errors.New(fmt.Sprintf("%s%d\n%s\n", "get ace offset error: ", offset, err.Error()))
+			return errors.New(fmt.Sprintf("%s%d\n%s\n", "get aceEntry offset error: ", offset, err.Error()))
 		}
-		ace, err := aceResolve(allData[offset:offset+int(aceSize.(uint16))], int(aceSize.(uint16)))
+		aceEntry, err := aceResolve(allData[offset:offset+int(aceSize.(uint16))], int(aceSize.(uint16)))
 		if err != nil {
 			return err
 		}
 
-		sacl.Aces = append(sacl.Aces, ace)
+		sacl.Aces = append(sacl.Aces, aceEntry)
 		offset = offset + int(aceSize.(uint16))
 	}
 
@@ -175,15 +175,15 @@ func (dacl *DaclHeader) ResolveDaclAces(allData []byte, aceCount int) error {
 	for i := 0; i < aceCount; i++ {
 		aceSize, err := datatype.GetValue(allData[offset+2 : offset+4])
 		if err != nil {
-			return errors.New(fmt.Sprintf("%s%d\n%s\n", "get ace offset error: ", offset, err.Error()))
+			return errors.New(fmt.Sprintf("%s%d\n%s\n", "get aceEntry offset error: ", offset, err.Error()))
 		}
-		ace, err := aceResolve(allData[offset:offset+int(aceSize.(uint16))], int(aceSize.(uint16)))
+		aceEntry, err := aceResolve(allData[offset:offset+int(aceSize.(uint16))], int(aceSize.(uint16)))
 		if err != nil {
 			//return errors.New(fmt.Sprintf("resolveDaclAces:%d - %s\n", i, err.Error()))
 			fmt.Printf(fmt.Sprintf("resolveDaclAces:%d - %s\n", i, err.Error()))
 		}
 
-		dacl.Aces = append(dacl.Aces, ace)
+		dacl.Aces = append(dacl.Aces, aceEntry)
 		offset = offset + int(aceSize.(uint16))
 	}
 
@@ -195,31 +195,31 @@ func (dacl *DaclHeader) AddAce(sid string, objectType string) (uint16, error) {
 	// 新建Ace结构
 	var err error
 
-	ace := ace.NewAceStruct()
-	ace.AceType = 5
-	ace.AceMask.Value = uint32(256)
-	ace.Extended.Value = "ObjectType"
-	ace.ObjectType = &datatype.DataType{
+	aceEntry := ace.NewAceStruct()
+	aceEntry.AceType = 5
+	aceEntry.AceMask.Value = uint32(256)
+	aceEntry.Extended.Value = "ObjectType"
+	aceEntry.ObjectType = &datatype.DataType{
 		RawData: []byte{},
 		Value:   objectType,
 	}
-	ace.SID.Value = sid
+	aceEntry.SID.Value = sid
 
 	// ace转换成字节
-	err = ace.Update()
+	err = aceEntry.Update()
 	if err != nil {
 		return 0, err
 	}
 
 	// 写入Ace到Dacl.Aces中
-	dacl.Aces = append(dacl.Aces, ace)
+	dacl.Aces = append(dacl.Aces, aceEntry)
 
 	// 更新Ace数量、大小,更新Dacl
 	dacl.AceCount.Value = dacl.AceCount.Value.(uint16) + 1
-	dacl.AclSize.Value = dacl.AclSize.Value.(uint16) + ace.AceSize.Value.(uint16)
+	dacl.AclSize.Value = dacl.AclSize.Value.(uint16) + aceEntry.AceSize.Value.(uint16)
 	dacl.update()
 
-	return ace.AceSize.Value.(uint16), nil
+	return aceEntry.AceSize.Value.(uint16), nil
 }
 
 // 根据value更新RawData

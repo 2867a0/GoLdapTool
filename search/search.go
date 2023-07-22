@@ -6,6 +6,7 @@ import (
 	"goLdapTools/cli/global"
 	"goLdapTools/conn"
 	"goLdapTools/log"
+	"goLdapTools/transform"
 	"goLdapTools/transform/sddl"
 	"strings"
 )
@@ -89,7 +90,8 @@ func (pluginBase PluginBase) PrintResult(entries []*ldap.Entry) {
 		result.WriteString(fmt.Sprintf("%s\n", entry.DN))
 
 		for _, v := range entry.Attributes {
-			if v.Name == "nTSecurityDescriptor" {
+			switch v.Name {
+			case "nTSecurityDescriptor":
 				sr, err := sddl.NewSecurityDescriptor(v.ByteValues[0])
 				if err != nil {
 					log.PrintErrorf("%s\n%s\n", "resolve nTSecurityDescriptor error:", err.Error())
@@ -97,9 +99,27 @@ func (pluginBase PluginBase) PrintResult(entries []*ldap.Entry) {
 				}
 				resultStrings := sr.DataToString(v.ByteValues[0])
 				log.PrintDebugf("dump nTSecurityDescriptor string: \n%s\n", resultStrings.String())
-			} else {
+			case "lastLogon":
+				dateString, err := transform.TimeToString(v.Values[0])
+				if err != nil {
+					log.PrintErrorf("%s\n%s\n", "resolve lastlogon error: ", err.Error())
+					return
+				}
+				result.WriteString(fmt.Sprintf("    %s: %s\n", v.Name, dateString))
+			default:
 				result.WriteString(fmt.Sprintf("    %s: %s\n", v.Name, strings.Join(v.Values, " ")))
 			}
+			//if v.Name == "nTSecurityDescriptor" {
+			//	sr, err := sddl.NewSecurityDescriptor(v.ByteValues[0])
+			//	if err != nil {
+			//		log.PrintErrorf("%s\n%s\n", "resolve nTSecurityDescriptor error:", err.Error())
+			//		return
+			//	}
+			//	resultStrings := sr.DataToString(v.ByteValues[0])
+			//	log.PrintDebugf("dump nTSecurityDescriptor string: \n%s\n", resultStrings.String())
+			//} else {
+			//	result.WriteString(fmt.Sprintf("    %s: %s\n", v.Name, strings.Join(v.Values, " ")))
+			//}
 		}
 	}
 	log.PrintSuccessf("%s\n%s", "Search result:", result.String())

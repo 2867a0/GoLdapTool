@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/go-ldap/ldap/v3"
+	"goLdapTools/cli/global"
 	"goLdapTools/conn"
 	"goLdapTools/log"
 	"goLdapTools/transform/sddl/control"
@@ -12,12 +13,12 @@ import (
 
 func TestGetSDDLFromLdap(t *testing.T) {
 	log.Init(false)
-	config := &conn.ConnectConfig{
-		Address:  "dc.test.lab",
-		UserName: "administrator@test.lab",
-		Password: "123.com",
-		BaseDN:   "dc=test,dc=lab",
-		SSLConn:  false,
+	config := &global.GlobalCommand{
+		DomainName: "dc.test.lab",
+		UserName:   "administrator@test.lab",
+		Password:   "123.com",
+		BaseDN:     "dc=test,dc=lab",
+		SSLConn:    false,
 	}
 	connect, err := conn.LdapConnect(config)
 	if err != nil {
@@ -213,8 +214,8 @@ func TestSDDLResolve(t *testing.T) {
 
 // 2字节转换为整数
 func TestByteToInt(t *testing.T) {
-	control := []byte{20, 140}
-	dd := uint16(control[0]) | uint16(control[1])<<8
+	cc := []byte{20, 140}
+	dd := uint16(cc[0]) | uint16(cc[1])<<8
 	fmt.Println(dd)
 }
 
