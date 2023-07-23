@@ -8,6 +8,7 @@ import (
 	"goLdapTools/log"
 	"goLdapTools/transform"
 	"goLdapTools/transform/sddl"
+	"goLdapTools/transform/sddl/guid"
 	"strings"
 )
 
@@ -106,6 +107,14 @@ func (pluginBase PluginBase) PrintResult(entries []*ldap.Entry) {
 					return
 				}
 				result.WriteString(fmt.Sprintf("    %s: %s\n", v.Name, dateString))
+			case "objectGUID":
+				toString, err := guid.GuidToString(v.ByteValues[0])
+				if err != nil {
+					log.PrintErrorf("%s\n%s\n", "resolve objectGUID error: ", err.Error())
+					return
+				}
+
+				result.WriteString(fmt.Sprintf("    %s: %s\n", v.Name, toString))
 			default:
 				result.WriteString(fmt.Sprintf("    %s: %s\n", v.Name, strings.Join(v.Values, " ")))
 			}
