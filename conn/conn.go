@@ -6,6 +6,7 @@ import (
 	"github.com/go-ldap/ldap/v3"
 	"goLdapTools/cli/global"
 	"goLdapTools/log"
+	"strings"
 )
 
 type Connector struct {
@@ -34,10 +35,34 @@ func LdapConnect(globalCommand *global.GlobalCommand) (*Connector, error) {
 		}
 	}
 
-	log.PrintDebugf("Trying to binding server")
-	err = conn.Bind(globalCommand.UserName, globalCommand.Password)
-	if err != nil {
-		return nil, err
+	if globalCommand.PassHash == "" {
+		log.PrintInfof("Trying to binding server with password")
+		err = conn.Bind(globalCommand.UserName, globalCommand.Password)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		domainSp := strings.Split(globalCommand.DomainName, ".")
+		domainString := strings.Join(domainSp[1:], ".")
+
+		req := &ldap.NTLMBindRequest{
+			Domain:             domainString,
+			Username:           (strings.Split(globalCommand.UserName, "@"))[0],
+			Hash:               globalCommand.PassHash,
+			AllowEmptyPassword: true,
+			Controls:           nil,
+		}
+
+		log.PrintInfof("Trying to binding server with hash")
+		_, err = conn.NTLMChallengeBind(req)
+		if err != nil {
+			return nil, err
+		}
+
+		//err = conn.NTLMBindWithHash("test.lab", globalCommand.UserName, globalCommand.PassHash)
+		//if err != nil {
+		//	return nil, err
+		//}
 	}
 
 	log.PrintSuccess("Binding success")

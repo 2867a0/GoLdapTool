@@ -12,6 +12,7 @@ const (
 	DomainNameStr = "domain-name"
 	UserStr       = "username"
 	PassStr       = "password"
+	HashStr       = "hash"
 	BaseDnStr     = "base-dn"
 	SslStr        = "ssl"
 	ExportStr     = "output"
@@ -21,6 +22,7 @@ type GlobalCommand struct {
 	DomainName string
 	UserName   string
 	Password   string
+	PassHash   string
 	BaseDN     string
 	SSLConn    bool
 	Export     string
@@ -45,6 +47,12 @@ func ParseGlobalCommand(cmd *cobra.Command) (config *GlobalCommand, err error) {
 	password, err := cmd.Flags().GetString(PassStr)
 	if err != nil {
 		log.PrintDebugf("Failed to parse --password-- flag %s", err)
+		return nil, err
+	}
+
+	passHash, err := cmd.Flags().GetString(HashStr)
+	if err != nil {
+		log.PrintDebugf("Failed to parse --hash-- flag %s", err)
 		return nil, err
 	}
 
@@ -75,6 +83,7 @@ func ParseGlobalCommand(cmd *cobra.Command) (config *GlobalCommand, err error) {
 		DomainName: domainName,
 		UserName:   userName,
 		Password:   password,
+		PassHash:   passHash,
 		BaseDN:     baseDN,
 		SSLConn:    ssl,
 		Export:     export,
