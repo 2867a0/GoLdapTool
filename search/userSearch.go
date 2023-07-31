@@ -81,7 +81,7 @@ func (pluginDcSync *PluginDCSyncUser) Search(conn *conn.Connector, controls []ld
 				}
 			}
 
-			for key, _ := range dcsyncUserMap {
+			for key := range dcsyncUserMap {
 				pluginDcSync.Filter = fmt.Sprintf("(objectSid=%s)", key)
 				pluginDcSync.Attributes = []string{"distinguishedName"}
 				userString, err := pluginDcSync.PluginBase.Search(conn, nil)
@@ -108,4 +108,28 @@ func (pluginDcSync *PluginDCSyncUser) Search(conn *conn.Connector, controls []ld
 	}
 
 	return results, nil
+}
+
+type PluginAllSPNUser struct {
+	PluginBase
+}
+
+func NewPluginAllSPNUser(flag *SearchConfig) PluginAllSPNUser {
+
+	filter := "(&(objectCategory=person)(objectClass=user)(!(useraccountcontrol=524288))(serviceprincipalname=*/*))"
+	attributes := []string{"distinguishedName", "servicePrincipalName"}
+
+	return PluginAllSPNUser{NewPluginBase(filter, attributes, flag)}
+}
+
+type PluginDomainAdminUser struct {
+	PluginBase
+}
+
+func NewPluginDomainAdminUser(flag *SearchConfig) PluginDomainAdminUser {
+
+	filter := "(&(|(&(objectCategory=person)(objectClass=user)))(adminCount=1))"
+	attributes := []string{"distinguishedName"}
+
+	return PluginDomainAdminUser{NewPluginBase(filter, attributes, flag)}
 }

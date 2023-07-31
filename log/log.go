@@ -17,6 +17,8 @@ var debugPrefix = "♻"
 var errorPrefix = "❌"
 var warningPrefix = "❗"
 
+var SaveResultStr = ""
+
 func Init(isRelease bool) {
 	if !isRelease {
 		template = "[{{datetime}}] [{{level}}] {{message}} {{data}} {{extra}}\n"

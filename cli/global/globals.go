@@ -78,6 +78,8 @@ func ParseGlobalCommand(cmd *cobra.Command) (config *GlobalCommand, err error) {
 		return nil, err
 	}
 
+	log.SaveResultStr = export
+
 	userName := fmt.Sprintf("%s@%s.%s", u, domainNameArr[len(domainNameArr)-2], domainNameArr[len(domainNameArr)-1])
 	return &GlobalCommand{
 		DomainName: domainName,

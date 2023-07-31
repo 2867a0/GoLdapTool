@@ -22,12 +22,28 @@ func init() {
 	SearchCmd.Flags().StringP(CustomStr, "f", "", "Use custom search syntax")
 	SearchCmd.Flags().StringP(AdditionalStr, "e", "", "Search for specified ldap attributes")
 
+	// 计算机类搜索模块
+	SearchCmd.AddCommand(domainComputerCmd)
+	SearchCmd.AddCommand(domainControllerCmd)
+
 	// 委派搜索注册
 	SearchCmd.AddCommand(rbcdCmd)
+	SearchCmd.AddCommand(trustedForDelegationUserCmd)
+	SearchCmd.AddCommand(trustedForDelegationComputerCmd)
+	SearchCmd.AddCommand(delegateUserCmd)
+
+	// 域基本信息模块
+	SearchCmd.AddCommand(domainMAQCmd)
+
+	// 域内组信息查询
+	SearchCmd.AddCommand(groupCmd)
+	SearchCmd.AddCommand(adminGroupCmd)
 
 	// 用户类搜索注册
 	SearchCmd.AddCommand(allUserCmd)
 	SearchCmd.AddCommand(dcsyncUserCmd)
+	SearchCmd.AddCommand(spnUserCmd)
+	SearchCmd.AddCommand(domainAdminUserCmd)
 }
 
 var SearchCmd = &cobra.Command{

@@ -9,6 +9,7 @@ import (
 	"goLdapTools/transform"
 	"goLdapTools/transform/sddl"
 	"goLdapTools/transform/sddl/guid"
+	"os"
 	"strings"
 )
 
@@ -53,6 +54,17 @@ func NewPluginBase(defaultFilter string, defaultAttribute []string, flag *Search
 
 	// 过滤重复元素
 	attributes := removeDuplicate(defaultAttribute)
+
+	// 错误处理
+	if defaultFilter == "" {
+		log.PrintError("filter is null")
+		os.Exit(-1)
+	}
+
+	if len(defaultAttribute) == 0 {
+		log.PrintError("search attribute is null")
+		os.Exit(-1)
+	}
 
 	return PluginBase{
 		BaseDN:     flag.Global.BaseDN,
@@ -133,6 +145,16 @@ func (pluginBase PluginBase) PrintResult(entries []*ldap.Entry) {
 	}
 	log.PrintSuccessf("%s\n%s", "Search result:", result.String())
 	log.PrintSuccessf("result count: %d\n", len(entries))
+
+	if log.SaveResultStr != "" {
+		log.PrintInfof("saving result to %s", log.SaveResultStr)
+
+		err := os.WriteFile(log.SaveResultStr, []byte(result.String()), 0777)
+		if err != nil {
+			log.PrintErrorf("save result error: %s", err.Error())
+			os.Exit(-2)
+		}
+	}
 }
 
 // 通过map主键唯一的特性过滤重复元素

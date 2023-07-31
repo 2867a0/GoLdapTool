@@ -72,3 +72,39 @@ func (pluginRBCD *PluginRBCD) Search(conn *conn.Connector, controls []ldap.Contr
 	}
 	return results, nil
 }
+
+type PluginTrustedForDelegationUser struct {
+	PluginBase
+}
+
+func NewPluginTrustedForDelegationUser(flag *SearchConfig) PluginTrustedForDelegationUser {
+
+	filter := "(&(samAccountType=805306368)(userAccountControl:1.2.840.113556.1.4.803:=524288))"
+	attributes := []string{"distinguishedName"}
+
+	return PluginTrustedForDelegationUser{NewPluginBase(filter, attributes, flag)}
+}
+
+type PluginTrustedForDelegationComputer struct {
+	PluginBase
+}
+
+func NewPluginTrustedForDelegationComputer(flag *SearchConfig) PluginTrustedForDelegationComputer {
+
+	filter := "(&(samAccountType=805306369)(userAccountControl:1.2.840.113556.1.4.803:=524288))"
+	attributes := []string{"distinguishedName"}
+
+	return PluginTrustedForDelegationComputer{NewPluginBase(filter, attributes, flag)}
+}
+
+type PluginDelegateUser struct {
+	PluginBase
+}
+
+func NewPluginDelegateUser(flag *SearchConfig) PluginDelegateUser {
+
+	filter := "(&(samAccountType=805306368)(msds-allowedtodelegateto=*))"
+	attributes := []string{"msds-allowedtodelegateto"}
+
+	return PluginDelegateUser{NewPluginBase(filter, attributes, flag)}
+}

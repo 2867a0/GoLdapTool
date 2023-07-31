@@ -10,7 +10,7 @@ import (
 
 var allUserCmd = &cobra.Command{
 	Use:   "U",
-	Short: "search all user",
+	Short: "搜索所有用户",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		searchCommand, err := getSearchHandle(cmd)
@@ -32,7 +32,7 @@ var allUserCmd = &cobra.Command{
 
 var dcsyncUserCmd = &cobra.Command{
 	Use:   "DCSync",
-	Short: "search dcsync user",
+	Short: "搜索DCSync用户",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		searchCommand, err := getSearchHandle(cmd)
@@ -50,5 +50,49 @@ var dcsyncUserCmd = &cobra.Command{
 		}
 
 		dcsyncSearch.PrintResult(entries)
+	},
+}
+
+var spnUserCmd = &cobra.Command{
+	Use:   "SPNU",
+	Short: "查找具有SPN属性的账户",
+	Long:  ``,
+	Run: func(cmd *cobra.Command, args []string) {
+		searchCommand, err := getSearchHandle(cmd)
+		if err != nil {
+			log.PrintError(err.Error())
+			return
+		}
+
+		spnUser := search.NewPluginAllSPNUser(searchCommand)
+
+		entries, err := spnUser.Search(searchCommand.Connector, nil)
+		if err != nil {
+			log.PrintErrorf("search spn user error: %s", err.Error())
+			return
+		}
+		spnUser.PrintResult(entries)
+	},
+}
+
+var domainAdminUserCmd = &cobra.Command{
+	Use:   "DAU",
+	Short: "查找域管账户",
+	Long:  ``,
+	Run: func(cmd *cobra.Command, args []string) {
+		searchCommand, err := getSearchHandle(cmd)
+		if err != nil {
+			log.PrintError(err.Error())
+			return
+		}
+
+		domainAdminUser := search.NewPluginDomainAdminUser(searchCommand)
+
+		entries, err := domainAdminUser.Search(searchCommand.Connector, nil)
+		if err != nil {
+			log.PrintErrorf("search domain admin user error: %s", err.Error())
+			return
+		}
+		domainAdminUser.PrintResult(entries)
 	},
 }
