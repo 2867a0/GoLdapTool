@@ -1,10 +1,10 @@
 ### 功能
 
-golang 实现的Ldap操作工具
+golang 实现的 Ldap 小工具
 
-- 实现ldap3原生库中不支持SDDL解析
-- 支持SDDL解析
+- 实现ldap3原生库中不支持SDDL解析(支持SDDL解析)
 - 支持修改SDDL
+- 以普通用户查询DCSync
 - 内置多种搜索语法
 - 支持自定义搜索语法
 
@@ -56,6 +56,7 @@ golang 实现的Ldap操作工具
 
 - [x] 添加DCSync权限
 - [ ] 激活用户
+- [ ] 使用示例
 
 其他补充  
 https://www.politoinc.com/post/ldap-queries-for-offensive-and-defensive-operations
