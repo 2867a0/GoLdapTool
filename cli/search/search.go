@@ -20,7 +20,7 @@ func init() {
 	//search mode argument
 	//SearchCmd.PersistentFlags().StringP(global.DnStr, "n", "", "search dn")
 	SearchCmd.Flags().StringP(CustomStr, "f", "", "Use custom search syntax")
-	SearchCmd.Flags().StringP(AdditionalStr, "e", "", "Search for specified ldap attributes")
+	SearchCmd.Flags().StringP(AdditionalStr, "e", "", "Search for specified ldap attributes(default: distinguishedName)")
 
 	// 计算机类搜索模块
 	SearchCmd.AddCommand(domainComputerCmd)
@@ -104,7 +104,7 @@ func parseSearchCommand(cmd *cobra.Command) *search.SearchAttr {
 	//	return nil, err
 	//}
 
-	attributes := []string{}
+	attributes := []string{"distinguishedName"}
 	if additional != "" {
 		for _, v := range strings.Split(additional, " ") {
 			attributes = append(attributes, v)
