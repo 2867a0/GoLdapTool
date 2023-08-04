@@ -149,7 +149,7 @@ func (pluginBase PluginBase) PrintResult(entries []*ldap.Entry) {
 		log.PrintSuccessf("%s\n%s", "Search result:", result.String())
 	} else {
 		log.SaveResultStr = "result.txt"
-		log.PrintInfof("saving result to %s", log.SaveResultStr)
+		log.PrintWarningf("The number of returned results is too large, the output will be saved in %s", log.SaveResultStr)
 
 		err := log.SaveResult([]byte(result.String()))
 		if err != nil {

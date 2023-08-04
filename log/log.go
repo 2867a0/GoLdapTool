@@ -12,7 +12,7 @@ var std = &slog.SugaredLogger{}
 var template string
 
 var infoPrefix = "➰"
-var successPrefix = "✔"
+var successPrefix = "✔ "
 var debugPrefix = "♻"
 var errorPrefix = "❌"
 var warningPrefix = "❗"
