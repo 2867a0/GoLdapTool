@@ -156,6 +156,8 @@ func (pluginBase PluginBase) PrintResult(entries []*ldap.Entry) {
 			log.PrintErrorf("Save Result error: %s", err.Error())
 			os.Exit(-2)
 		}
+
+		log.SaveResultStr = ""
 	}
 
 	log.PrintSuccessf("result count: %d\n", len(entries))
