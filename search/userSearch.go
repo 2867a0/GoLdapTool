@@ -117,7 +117,7 @@ type PluginAllSPNUser struct {
 func NewPluginAllSPNUser(flag *SearchConfig) PluginAllSPNUser {
 
 	filter := "(&(objectCategory=person)(objectClass=user)(!(useraccountcontrol=524288))(serviceprincipalname=*/*))"
-	attributes := []string{"distinguishedName", "servicePrincipalName"}
+	attributes := []string{"distinguishedName", "servicePrincipalName", "SAMAccountName"}
 
 	return PluginAllSPNUser{NewPluginBase(filter, attributes, flag)}
 }
@@ -129,7 +129,7 @@ type PluginDomainAdminUser struct {
 func NewPluginDomainAdminUser(flag *SearchConfig) PluginDomainAdminUser {
 
 	filter := "(&(|(&(objectCategory=person)(objectClass=user)))(adminCount=1))"
-	attributes := []string{"distinguishedName"}
+	attributes := []string{"distinguishedName", "SAMAccountName"}
 
 	return PluginDomainAdminUser{NewPluginBase(filter, attributes, flag)}
 }

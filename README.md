@@ -15,7 +15,6 @@ golang 实现的 Ldap 小工具
 ### BUG
 
 - 资源约束委派msDS-AllowedToActOnBehalfOfOtherIdentity 字段未解析
-- 用户以samaccountname为准，不能以cn为导出
 
 ### 版本控制
 当前版本：2.3
