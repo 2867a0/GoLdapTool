@@ -14,13 +14,11 @@ golang 实现的 Ldap 小工具
 
 ### BUG
 
-- home.xx.com 的情况下搜索basedn为 xx.com，应该为home.xx.com
 - 资源约束委派msDS-AllowedToActOnBehalfOfOtherIdentity 字段未解析
-- 数据量过大导致的报错
 - 用户以samaccountname为准，不能以cn为导出
 
 ### 版本控制
-当前版本：2.1
+当前版本：2.2
 
 1.0 以项目功能移植为主，不添加新功能，确保已有功能不出现错误  
 2.0 添加修改Ldap属性为主  

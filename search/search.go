@@ -87,9 +87,10 @@ func (pluginBase *PluginBase) Search(conn *conn.Connector, controls []ldap.Contr
 		pluginBase.Attributes,
 		controls,
 	)
-	sr, err := conn.Conn.Search(searchRequest)
+	//sr, err := conn.Conn.Search(searchRequest)
+	sr, err := conn.Conn.SearchWithPaging(searchRequest, 1000)
 	if err != nil {
-		log.PrintErrorf("search ldap error: %s", err.Error())
+		//log.PrintErrorf("search ldap error: %s", err.Error())
 		return nil, err
 	}
 
@@ -143,15 +144,27 @@ func (pluginBase PluginBase) PrintResult(entries []*ldap.Entry) {
 			//}
 		}
 	}
-	log.PrintSuccessf("%s\n%s", "Search result:", result.String())
+
+	if len(entries) < 50 {
+		log.PrintSuccessf("%s\n%s", "Search result:", result.String())
+	} else {
+		log.SaveResultStr = "result.txt"
+		log.PrintInfof("saving result to %s", log.SaveResultStr)
+
+		err := log.SaveResult([]byte(result.String()))
+		if err != nil {
+			log.PrintErrorf("Save Result error: %s", err.Error())
+			os.Exit(-2)
+		}
+	}
+
 	log.PrintSuccessf("result count: %d\n", len(entries))
 
 	if log.SaveResultStr != "" {
 		log.PrintInfof("saving result to %s", log.SaveResultStr)
-
-		err := os.WriteFile(log.SaveResultStr, []byte(result.String()), 0777)
+		err := log.SaveResult([]byte(result.String()))
 		if err != nil {
-			log.PrintErrorf("save result error: %s", err.Error())
+			log.PrintErrorf("Save Result error: %s", err.Error())
 			os.Exit(-2)
 		}
 	}

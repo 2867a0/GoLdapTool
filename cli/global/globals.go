@@ -63,7 +63,7 @@ func ParseGlobalCommand(cmd *cobra.Command) (config *GlobalCommand, err error) {
 		return nil, err
 	}
 	if baseDN == "" {
-		baseDN = fmt.Sprintf("dc=%s,dc=%s", domainNameArr[len(domainNameArr)-2], domainNameArr[len(domainNameArr)-1])
+		baseDN = fmt.Sprintf("dc=%s", strings.Join(domainNameArr, ",dc="))
 	}
 
 	ssl, err := cmd.Flags().GetBool(SslStr)
@@ -82,7 +82,7 @@ func ParseGlobalCommand(cmd *cobra.Command) (config *GlobalCommand, err error) {
 
 	var userName = u
 	if !strings.Contains(u, "@") && !strings.Contains(u, "\\") {
-		userName = fmt.Sprintf("%s@%s.%s", u, domainNameArr[len(domainNameArr)-2], domainNameArr[len(domainNameArr)-1])
+		userName = fmt.Sprintf("%s@%s", u, domainName)
 	}
 
 	return &GlobalCommand{

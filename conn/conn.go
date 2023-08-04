@@ -37,27 +37,26 @@ func LdapConnect(globalCommand *global.GlobalCommand) (*Connector, error) {
 
 	if globalCommand.PassHash == "" {
 		log.PrintInfof("Trying to binding server with password")
-		log.PrintInfof("username: %s", globalCommand.UserName)
-		log.PrintInfof("password: %s", globalCommand.Password)
+		log.PrintInfof("Domain Name: %s", globalCommand.DomainName)
+		log.PrintInfof("username:    %s", globalCommand.UserName)
+		log.PrintInfof("password:    %s", globalCommand.Password)
 
 		err = conn.Bind(globalCommand.UserName, globalCommand.Password)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		domainSp := strings.Split(globalCommand.DomainName, ".")
-		domainString := strings.Join(domainSp[1:], ".")
-
 		req := &ldap.NTLMBindRequest{
-			Domain:             domainString,
-			Username:           (strings.Split(globalCommand.UserName, "@"))[0],
+			Domain:             globalCommand.DomainName,
+			Username:           strings.Split(globalCommand.UserName, "@")[0],
 			Hash:               globalCommand.PassHash,
 			AllowEmptyPassword: true,
 			Controls:           nil,
 		}
 
 		log.PrintInfof("Trying to binding server with hash")
-		log.PrintInfof("username:  %s", (strings.Split(globalCommand.UserName, "@"))[0])
+		//log.PrintInfof("username:  %s", globalCommand.UserName)
+		log.PrintInfof("username:  %s", strings.Split(globalCommand.UserName, "@")[0])
 		log.PrintInfof("pass-hash: %s", globalCommand.PassHash)
 
 		_, err = conn.NTLMChallengeBind(req)

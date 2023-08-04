@@ -114,3 +114,12 @@ func PrintWarningf(format string, args ...interface{}) {
 	formats := fmt.Sprintf("%s %s", warningPrefix, format)
 	std.Logf(slog.WarnLevel, formats, args...)
 }
+
+func SaveResult(data []byte) error {
+	err := os.WriteFile(SaveResultStr, data, 0777)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
