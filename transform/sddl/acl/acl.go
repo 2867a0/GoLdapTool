@@ -45,9 +45,15 @@ func NewSaclHeader(data []byte) (*SaclHeader, error) {
 		AclHeader: &AclHeader{
 			Revision: 0,
 			Sbz1:     0,
-			AclSize:  nil,
-			AceCount: nil,
-			Sbz2:     nil,
+			AclSize: &datatype.DataType{
+				RawData: []byte{},
+				Value:   0,
+			},
+			AceCount: &datatype.DataType{
+				RawData: []byte{},
+				Value:   0,
+			},
+			Sbz2: nil,
 		},
 		Aces:    []*ace.AceStruct{},
 		RawData: []byte{},
@@ -72,11 +78,11 @@ func NewDaclHeader(data []byte) (*DaclHeader, error) {
 			Sbz1:     0,
 			AclSize: &datatype.DataType{
 				RawData: []byte{},
-				Value:   nil,
+				Value:   0,
 			},
 			AceCount: &datatype.DataType{
 				RawData: []byte{},
-				Value:   nil,
+				Value:   0,
 			},
 			Sbz2: &datatype.DataType{
 				RawData: []byte{},
@@ -328,7 +334,7 @@ func aceResolve(aceData []byte, aceSize int) (*ace.AceStruct, error) {
 	}
 
 	aceEntry.SID = &datatype.DataType{RawData: aceData[size+extended:]}
-	aceEntry.SID.Value = sid.SidToString(aceEntry.SID.RawData[:])
+	aceEntry.SID.Value, _ = sid.SidToString(aceEntry.SID.RawData[:])
 
 	aceEntry.RawData = aceData
 

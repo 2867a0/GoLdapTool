@@ -40,6 +40,20 @@ type SrSecurityDescriptor struct {
 
 // NewSecurityDescriptor 接受sddl原始数据，返回解析后的数据结构
 func NewSecurityDescriptor(sddlData []byte) (*SrSecurityDescriptor, error) {
+	// debug dump
+	if sddlData != nil {
+		var nTSecurityDescriptorRawValue string
+		for index, value := range sddlData {
+			//nTSecurityDescriptorRawValue = nTSecurityDescriptorRawValue + fmt.Sprintf("0x%02x, ", value)
+			nTSecurityDescriptorRawValue = nTSecurityDescriptorRawValue + fmt.Sprintf("%02x ", value)
+
+			if (index+1)%16 == 0 {
+				nTSecurityDescriptorRawValue = nTSecurityDescriptorRawValue + "\n"
+			}
+		}
+		log.PrintDebugf("Debug Dump raw data:\n%s\n", nTSecurityDescriptorRawValue)
+	}
+
 	// 解析 SecurityDescriptor 头
 	sr := &SrSecurityDescriptor{RawData: sddlData[0:20]}
 	err := sr.initNtSecurityDescriptorHeader()
@@ -92,26 +106,18 @@ func NewSecurityDescriptor(sddlData []byte) (*SrSecurityDescriptor, error) {
 	}
 
 	// OwnerSid
-	if sr.OffsetOwner.Value.(uint32) == 0 {
-		sr.OwnerSid = &datatype.DataType{
-			RawData: nil,
-			Value:   nil,
-		}
-	} else {
-		ownerSidSize := sr.OffsetGroup.Value.(uint32) - sr.OffsetOwner.Value.(uint32)
-		sr.OwnerSid = &datatype.DataType{RawData: sddlData[sr.OffsetOwner.Value.(uint32) : sr.OffsetOwner.Value.(uint32)+ownerSidSize]}
-		sr.OwnerSid.Value = sid.SidToString(sr.OwnerSid.RawData)
+	sr.OwnerSid = &datatype.DataType{
+		RawData: nil,
+		Value:   nil,
+	}
+	if sr.OffsetOwner.Value.(uint32) != 0 {
+		sr.OwnerSid.Value, sr.OwnerSid.RawData = sid.SidToString(sddlData[sr.OffsetOwner.Value.(uint32):])
 	}
 
-	if sr.OffsetGroup.Value.(uint32) == 0 {
-		sr.GroupSid = &datatype.DataType{
-			RawData: nil,
-			Value:   nil,
-		}
-	} else {
-		// GroupSid
-		sr.GroupSid = &datatype.DataType{RawData: sddlData[sr.OffsetGroup.Value.(uint32):]}
-		sr.GroupSid.Value = sid.SidToString(sr.GroupSid.RawData)
+	// GroupSid
+	sr.GroupSid = &datatype.DataType{}
+	if sr.OffsetGroup.Value.(uint32) != 0 {
+		sr.GroupSid.Value, sr.GroupSid.RawData = sid.SidToString(sddlData[sr.OffsetGroup.Value.(uint32):])
 	}
 
 	return sr, nil
@@ -172,20 +178,6 @@ func (sr *SrSecurityDescriptor) initNtSecurityDescriptorHeader() error {
 
 // DataToString 打印，以字符串形式显示sddl数据
 func (sr *SrSecurityDescriptor) DataToString(sddlData []byte) strings.Builder {
-	// debug dump
-	if sddlData != nil {
-		var nTSecurityDescriptorRawValue string
-		for index, value := range sddlData {
-			//nTSecurityDescriptorRawValue = nTSecurityDescriptorRawValue + fmt.Sprintf("0x%02x, ", value)
-			nTSecurityDescriptorRawValue = nTSecurityDescriptorRawValue + fmt.Sprintf("%02x ", value)
-
-			if (index+1)%16 == 0 {
-				nTSecurityDescriptorRawValue = nTSecurityDescriptorRawValue + "\n"
-			}
-		}
-		log.PrintDebugf("Debug Dump raw data:\n%s\n", nTSecurityDescriptorRawValue)
-	}
-
 	var sddlString strings.Builder
 
 	// SecurityDescriptor头
@@ -219,7 +211,7 @@ func (sr *SrSecurityDescriptor) DataToString(sddlData []byte) strings.Builder {
 			" ", "OwnerSid:", ownerSid,
 			" ", "GroupSid:", groupSid))
 
-	if sr.Sacl.AclSize != nil {
+	if sr.Sacl.AclSize.Value != 0 {
 		// Sacl头
 		sddlString.WriteString(
 			fmt.Sprintf("Sacl header:\n"+

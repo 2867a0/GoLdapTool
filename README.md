@@ -59,8 +59,10 @@ golang 实现的 Ldap 小工具
 ### 2.0 TODO
 
 - [x] 添加DCSync权限
+- [ ] 修改RBCD
 - [ ] 激活用户
 - [ ] 使用示例
+- [ ] 查询DNS记录
 
 其他补充  
 https://www.politoinc.com/post/ldap-queries-for-offensive-and-defensive-operations

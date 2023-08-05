@@ -38,7 +38,7 @@ func AppendADSddl(globalConfig *global.GlobalCommand, conn *conn.Connector, cont
 	for _, entry := range userEntries {
 		for _, v := range entry.Attributes {
 			if v.Name == "objectSid" {
-				userSid = sid.SidToString(v.ByteValues[0])
+				userSid, _ = sid.SidToString(v.ByteValues[0])
 			}
 		}
 	}

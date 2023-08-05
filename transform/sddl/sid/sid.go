@@ -21,14 +21,16 @@ type sid struct {
 	RelativeID        *int
 }
 
-func SidToString(b []byte) string {
+func SidToString(b []byte) (string, []byte) {
 	var ss sid
+	data := []byte{b[0], b[1]}
 
 	ss.RevisionLevel = int(b[0])
 	ss.SubAuthorityCount = int(b[1]) & 0xFF
 
 	for i := 2; i <= 7; i++ {
 		ss.Authority = ss.Authority | int(b[i])<<(8*(5-(i-2)))
+		data = append(data, b[i])
 	}
 
 	var offset = 8
@@ -37,6 +39,7 @@ func SidToString(b []byte) string {
 		var subAuthority int
 		for k := 0; k < size; k++ {
 			subAuthority = subAuthority | (int(b[offset+k])&0xFF)<<(8*k)
+			data = append(data, b[offset+k])
 		}
 		ss.SubAuthorities = append(ss.SubAuthorities, subAuthority)
 		offset += size
@@ -46,7 +49,7 @@ func SidToString(b []byte) string {
 	for _, v := range ss.SubAuthorities {
 		s += fmt.Sprintf("-%d", v)
 	}
-	return s
+	return s, data
 }
 
 func StringToSid(sidString string) ([]byte, error) {

@@ -105,14 +105,52 @@ func (pluginBase PluginBase) PrintResult(entries []*ldap.Entry) {
 
 		for _, v := range entry.Attributes {
 			switch v.Name {
-			case "nTSecurityDescriptor":
+			case "nTSecurityDescriptor", "msDS-AllowedToActOnBehalfOfOtherIdentity":
 				sr, err := sddl.NewSecurityDescriptor(v.ByteValues[0])
 				if err != nil {
 					log.PrintErrorf("%s\n%s\n", "resolve nTSecurityDescriptor error:", err.Error())
 					return
 				}
-				resultStrings := sr.DataToString(v.ByteValues[0])
-				log.PrintDebugf("dump nTSecurityDescriptor string: \n%s\n", resultStrings.String())
+				log.PrintDebugf("dump nTSecurityDescriptor string: \n%s\n", sr.DataToString(v.ByteValues[0]))
+
+				var endResult strings.Builder
+
+				if sr.OwnerSid.Value != nil {
+					endResult.WriteString(fmt.Sprintf("[OwnerSid: %s]", sr.OwnerSid.Value.(string)))
+				}
+
+				if sr.GroupSid.Value != nil {
+					endResult.WriteString(fmt.Sprintf("[GroupSid: %s]", sr.GroupSid.Value.(string)))
+				}
+
+				if sr.Dacl.AclSize.Value != 0 {
+					for _, ace := range sr.Dacl.Aces {
+						aceMaskString, err := ace.AceMask.GetAceMaskString()
+						if err != nil {
+							log.PrintErrorf("get ace mask string error: %s", err)
+							os.Exit(-2)
+						}
+
+						endResult.WriteString(fmt.Sprintf("[[Ace Mask: %s]", aceMaskString))
+
+						if ace.ObjectType != nil {
+							endResult.WriteString(fmt.Sprintf("[ObjectType: %s]", ace.ObjectType.Value.(string)))
+						}
+
+						if ace.InheritedObjectType != nil {
+							endResult.WriteString(fmt.Sprintf("[InheritedObjectType: %s]", ace.InheritedObjectType.Value.(string)))
+						}
+
+						if ace.SID.Value != nil {
+							endResult.WriteString(fmt.Sprintf("[SID: %s]", ace.SID.Value.(string)))
+						}
+
+						endResult.WriteString("]")
+					}
+				}
+
+				result.WriteString(fmt.Sprintf("    %s: %s\n", v.Name, endResult.String()))
+
 			case "lastLogon":
 				dateString, err := transform.TimeToString(v.Values[0])
 				if err != nil {
@@ -128,6 +166,7 @@ func (pluginBase PluginBase) PrintResult(entries []*ldap.Entry) {
 				}
 
 				result.WriteString(fmt.Sprintf("    %s: %s\n", v.Name, toString))
+
 			default:
 				result.WriteString(fmt.Sprintf("    %s: %s\n", v.Name, strings.Join(v.Values, " ")))
 			}

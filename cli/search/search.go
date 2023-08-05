@@ -75,9 +75,6 @@ func getSearchHandle(cmd *cobra.Command) (*search.SearchConfig, error) {
 	}
 
 	searchCommand := parseSearchCommand(cmd)
-	//if err != nil {
-	//	return nil, errors.New(fmt.Sprintf("Parse search command error: %s", err.Error()))
-	//}
 
 	ldapConnecter, err := conn.LdapConnect(globalCommand)
 	if err != nil {
