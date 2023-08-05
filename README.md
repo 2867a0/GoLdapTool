@@ -12,12 +12,8 @@ golang 实现的 Ldap 小工具
 
 ...
 
-### BUG
-
-- 资源约束委派msDS-AllowedToActOnBehalfOfOtherIdentity 字段未解析
-
 ### 版本控制
-当前版本：2.3
+当前版本：2.4
 
 1.0 以项目功能移植为主，不添加新功能，确保已有功能不出现错误  
 2.0 添加修改Ldap属性为主  
