@@ -1,4 +1,4 @@
-//go:build !windows
+//go:build windows
 
 package cli
 
@@ -14,10 +14,11 @@ import (
 
 func init() {
 	//global argument
-	rootCmd.PersistentFlags().StringP(global.DomainNameStr, "d", "", "domain name")
+	rootCmd.PersistentFlags().StringP(global.DomainNameStr, "d", "", "domain name (example: test.lab)")
 	rootCmd.PersistentFlags().StringP(global.UserStr, "u", "", "username")
 	rootCmd.PersistentFlags().StringP(global.PassStr, "p", "", "password")
 	rootCmd.PersistentFlags().StringP(global.HashStr, "", "", "hash")
+	rootCmd.PersistentFlags().StringP(global.GssApiStr, "t", "", "login with current user token(example: --gssapi dc.test.lab)")
 	rootCmd.PersistentFlags().StringP(global.BaseDnStr, "b", "", "Specify DN (ou=xx,dc=xx,dc=xx)")
 	rootCmd.PersistentFlags().BoolP(global.SslStr, "s", false, "Use ssl to connect to ldap. default false")
 	rootCmd.PersistentFlags().StringP(global.ExportStr, "o", "", "save result to file.")

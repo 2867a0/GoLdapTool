@@ -1,4 +1,4 @@
-//go:build !windows
+//go:build windows
 
 package global
 
@@ -15,19 +15,21 @@ const (
 	UserStr       = "username"
 	PassStr       = "password"
 	HashStr       = "hash"
+	GssApiStr     = "gssapi"
 	BaseDnStr     = "base-dn"
 	SslStr        = "ssl"
 	ExportStr     = "output"
 )
 
 type GlobalCommand struct {
-	DomainName string
-	UserName   string
-	Password   string
-	PassHash   string
-	BaseDN     string
-	SSLConn    bool
-	Export     string
+	DomainName  string
+	UserName    string
+	Password    string
+	PassHash    string
+	GssApiLogin string
+	BaseDN      string
+	SSLConn     bool
+	Export      string
 }
 
 func ParseGlobalCommand(cmd *cobra.Command) (config *GlobalCommand, err error) {
@@ -55,6 +57,12 @@ func ParseGlobalCommand(cmd *cobra.Command) (config *GlobalCommand, err error) {
 	passHash, err := cmd.Flags().GetString(HashStr)
 	if err != nil {
 		log.PrintDebugf("Failed to parse --hash-- flag %s", err)
+		return nil, err
+	}
+
+	gssapi, err := cmd.Flags().GetString(GssApiStr)
+	if err != nil {
+		log.PrintDebugf("Failed to parse --gssapi-- flag %s", err)
 		return nil, err
 	}
 
@@ -88,12 +96,13 @@ func ParseGlobalCommand(cmd *cobra.Command) (config *GlobalCommand, err error) {
 	}
 
 	return &GlobalCommand{
-		DomainName: domainName,
-		UserName:   userName,
-		Password:   password,
-		PassHash:   passHash,
-		BaseDN:     baseDN,
-		SSLConn:    ssl,
-		Export:     export,
+		DomainName:  domainName,
+		UserName:    userName,
+		Password:    password,
+		PassHash:    passHash,
+		GssApiLogin: gssapi,
+		BaseDN:      baseDN,
+		SSLConn:     ssl,
+		Export:      export,
 	}, nil
 }

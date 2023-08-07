@@ -1,4 +1,4 @@
-//go:build !windows
+//go:build windows
 
 package conn
 
@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/go-ldap/ldap/v3"
+	"github.com/go-ldap/ldap/v3/gssapi"
 	"goLdapTools/cli/global"
 	"goLdapTools/log"
 	"strings"
@@ -18,7 +19,15 @@ type Connector struct {
 
 func LdapConnect(globalCommand *global.GlobalCommand) (*Connector, error) {
 	var conn *ldap.Conn
+	var sspiConn *gssapi.SSPIClient
 	var err error
+
+	if globalCommand.GssApiLogin != "" {
+		sspiConn, err = gssapi.NewSSPIClient()
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	//非加密连接
 	if !globalCommand.SSLConn {
@@ -37,7 +46,7 @@ func LdapConnect(globalCommand *global.GlobalCommand) (*Connector, error) {
 		}
 	}
 
-	if globalCommand.PassHash == "" {
+	if globalCommand.PassHash == "" && globalCommand.Password != "" {
 		log.PrintInfof("Trying to binding server with password")
 		log.PrintInfof("Domain Name: %s", globalCommand.DomainName)
 		log.PrintInfof("username:    %s", globalCommand.UserName)
@@ -47,7 +56,7 @@ func LdapConnect(globalCommand *global.GlobalCommand) (*Connector, error) {
 		if err != nil {
 			return nil, err
 		}
-	} else {
+	} else if globalCommand.UserName != "" && globalCommand.GssApiLogin == "" {
 		req := &ldap.NTLMBindRequest{
 			Domain:             globalCommand.DomainName,
 			Username:           strings.Split(globalCommand.UserName, "@")[0],
@@ -57,7 +66,6 @@ func LdapConnect(globalCommand *global.GlobalCommand) (*Connector, error) {
 		}
 
 		log.PrintInfof("Trying to binding server with hash")
-		//log.PrintInfof("username:  %s", globalCommand.UserName)
 		log.PrintInfof("username:  %s", strings.Split(globalCommand.UserName, "@")[0])
 		log.PrintInfof("pass-hash: %s", globalCommand.PassHash)
 
@@ -65,11 +73,13 @@ func LdapConnect(globalCommand *global.GlobalCommand) (*Connector, error) {
 		if err != nil {
 			return nil, err
 		}
+	} else {
+		log.PrintInfo("Trying to binging server with current token")
 
-		//err = conn.NTLMBindWithHash("test.lab", globalCommand.UserName, globalCommand.PassHash)
-		//if err != nil {
-		//	return nil, err
-		//}
+		err = conn.GSSAPIBind(sspiConn, fmt.Sprintf("ldap/%s", globalCommand.GssApiLogin), "")
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	log.PrintSuccess("Binding success")
