@@ -26,7 +26,7 @@ type GlobalCommand struct {
 	UserName    string
 	Password    string
 	PassHash    string
-	GssApiLogin string
+	GssApiLogin bool
 	BaseDN      string
 	SSLConn     bool
 	Export      string
@@ -60,7 +60,7 @@ func ParseGlobalCommand(cmd *cobra.Command) (config *GlobalCommand, err error) {
 		return nil, err
 	}
 
-	gssapi, err := cmd.Flags().GetString(GssApiStr)
+	gssapi, err := cmd.Flags().GetBool(GssApiStr)
 	if err != nil {
 		log.PrintDebugf("Failed to parse --gssapi-- flag %s", err)
 		return nil, err
