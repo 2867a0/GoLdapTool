@@ -19,8 +19,8 @@ const (
 func init() {
 	//search mode argument
 	//SearchCmd.PersistentFlags().StringP(global.DnStr, "n", "", "search dn")
-	SearchCmd.Flags().StringP(FilterStr, "f", "", "Use custom search syntax")
-	SearchCmd.Flags().StringP(AdditionalStr, "e", "", "Search for specified ldap attributes(default: distinguishedName)")
+	SearchCmd.Flags().StringP(FilterStr, "f", "", "Use custom search syntax. example: \"(objectclass=*)\"")
+	SearchCmd.Flags().StringP(AdditionalStr, "e", "", "Search for specified ldap attributes(default: distinguishedName). example: \"SAMAccountName description\"")
 
 	// 计算机类搜索模块
 	SearchCmd.AddCommand(domainComputerCmd)
